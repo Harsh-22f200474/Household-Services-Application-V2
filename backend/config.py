@@ -1,5 +1,13 @@
+import os
+from pathlib import Path
 
 class Config:
-    SECRET_KEY = 'your-secret-key'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///household_services.db'
+    # Get the base directory of your project
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    
+    # Database configuration
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + str(BASE_DIR / 'household_services.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Secret key for session management
+    SECRET_KEY = 'your-secret-key-here'
