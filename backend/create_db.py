@@ -1,6 +1,6 @@
-from app import db, create_app
+from app import create_app
+from extensions import db, bcrypt
 from models.models import User, Professional, Customer, Service, ServiceRequest, Review
-from werkzeug.security import generate_password_hash
 
 def init_db():
     app = create_app()
@@ -10,15 +10,24 @@ def init_db():
         
         # Create admin user if not exists
         if not User.query.filter_by(role='admin').first():
+            # Properly hash the password using bcrypt
+            hashed_password = bcrypt.generate_password_hash('admin123').decode('utf-8')
+            
             admin = User(
                 username='admin',
                 email='admin@example.com',
-                password_hash=generate_password_hash('admin123'),
-                role='admin'
+                password_hash=hashed_password,
+                role='admin',
+                is_active=True
             )
-            db.session.add(admin)
-            db.session.commit()
-            print("Admin user created successfully!")
+            
+            try:
+                db.session.add(admin)
+                db.session.commit()
+                print("Admin user created successfully!")
+            except Exception as e:
+                db.session.rollback()
+                print(f"Error creating admin: {e}")
 
 if __name__ == '__main__':
     init_db() 

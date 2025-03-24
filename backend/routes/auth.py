@@ -5,7 +5,7 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity
 )
-from models.models import User, Professional, Customer
+from models.models import User, Professional, Customer, Service, ServiceRequest
 from extensions import db, bcrypt
 
 auth_bp = Blueprint('auth', __name__)
@@ -62,34 +62,61 @@ def register():
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    user = User.query.filter_by(email=data['email']).first()
-    
-    if user and bcrypt.check_password_hash(user.password_hash, data['password']):
-        access_token = create_access_token(identity=user.id)
-        refresh_token = create_refresh_token(identity=user.id)
+    try:
+        data = request.get_json()
         
-        # Determine dashboard URL based on role
-        if user.role == 'admin':
-            dashboard_url = '/api/admin/dashboard'
-        elif user.role == 'professional':
-            dashboard_url = '/api/professional/dashboard'
-        else:  # customer
-            dashboard_url = '/api/customer/dashboard'
+        if not data or 'email' not in data or 'password' not in data:
+            return jsonify({'error': 'Email and password are required'}), 400
         
-        return jsonify({
-            'access_token': access_token,
-            'refresh_token': refresh_token,
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'role': user.role
-            },
-            'dashboard_url': dashboard_url
-        }), 200
-    
-    return jsonify({'error': 'Invalid credentials'}), 401
+        user = User.query.filter_by(email=data['email']).first()
+        
+        if user and bcrypt.check_password_hash(user.password_hash, data['password']):
+            access_token = create_access_token(identity=str(user.id))
+            refresh_token = create_refresh_token(identity=str(user.id))
+
+            # Determine dashboard URL and initial data based on role
+            if user.role == 'admin':
+                # Get initial admin dashboard data
+                services_count = Service.query.count()
+                pending_professionals = Professional.query.filter_by(is_verified=False).count()
+                active_requests = ServiceRequest.query.filter_by(status='requested').count()
+                
+                response_data = {
+                    'access_token': access_token,
+                    'refresh_token': refresh_token,
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'role': user.role
+                    },
+                    'dashboard_url': '/api/admin/dashboard',
+                    'dashboard_data': {
+                        'total_services': services_count,
+                        'pending_verifications': pending_professionals,
+                        'active_requests': active_requests
+                    }
+                }
+            else:
+                response_data = {
+                    'access_token': access_token,
+                    'refresh_token': refresh_token,
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                        'role': user.role
+                    },
+                    'dashboard_url': f'/api/{user.role}/dashboard'
+                }
+            
+            return jsonify(response_data), 200
+        
+        return jsonify({'error': 'Invalid email or password'}), 401
+        
+    except Exception as e:
+        print(f"Login error: {str(e)}")  # For debugging
+        return jsonify({'error': 'An error occurred during login'}), 500
 
 @auth_bp.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)
@@ -98,18 +125,6 @@ def refresh():
     access_token = create_access_token(identity=current_user)
     
     return jsonify({'access_token': access_token}), 200
-
-# Protected route example
-@auth_bp.route('/protected', methods=['GET'])
-@jwt_required()
-def protected():
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-    
-    return jsonify({
-        'message': f'Protected route accessed by {user.username}',
-        'role': user.role
-    }), 200
 
 @auth_bp.route('/logout', methods=['POST'])
 @jwt_required()

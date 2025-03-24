@@ -1,20 +1,41 @@
 from flask import Flask, jsonify
+from flask.json.provider import DefaultJSONProvider
 from config import Config
 from extensions import db, jwt, bcrypt, cors
+from flask_cors import CORS
+from datetime import datetime
+import json
 
 def create_app():
     app = Flask(__name__)
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:8080"}})
     
     # Load configuration
     app.config.from_object(Config)
     
-    # Initialize extensions with app
+    # Configure a custom JSON provider to handle datetime objects
+    class CustomJSONProvider(DefaultJSONProvider):
+        def dumps(self, obj, **kwargs):
+            return json.dumps(obj, default=self.default, **kwargs)
+
+        def loads(self, s, **kwargs):
+            return json.loads(s, **kwargs)
+
+        def default(self, obj):
+            if isinstance(obj, datetime):
+                return obj.isoformat()
+            return super().default(obj)
+    
+    # Set the custom JSON provider (remove legacy json_encoder assignment)
+    app.json_provider_class = CustomJSONProvider
+
+    # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)
     bcrypt.init_app(app)
     cors.init_app(app)
     
-    # Add root route
+    # Root route
     @app.route('/')
     def home():
         return jsonify({

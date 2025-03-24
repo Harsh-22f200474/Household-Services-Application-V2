@@ -48,7 +48,7 @@ class Service(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
     base_price = db.Column(db.Float, nullable=False)
-    time_required = db.Column(db.Integer)  # in minutes
+    time_required = db.Column(db.Integer, default=60)  # in minutes
     is_active = db.Column(db.Boolean, default=True)
     
     # Relationships
