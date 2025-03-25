@@ -9,14 +9,23 @@
           <div class="card-body">
             <form @submit.prevent="handleRegister">
               <div class="mb-3">
-                <label for="email" class="form-label"
-                  >Email ID (Username):</label
-                >
+                <label for="email" class="form-label">Email ID:</label>
                 <input
                   type="email"
                   class="form-control"
                   id="email"
                   v-model="formData.email"
+                  required
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="username" class="form-label">Username:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  v-model="formData.username"
                   required
                 />
               </div>
@@ -33,12 +42,12 @@
               </div>
 
               <div class="mb-3">
-                <label for="fullname" class="form-label">Fullname:</label>
+                <label for="name" class="form-label">Full Name:</label>
                 <input
                   type="text"
                   class="form-control"
-                  id="fullname"
-                  v-model="formData.fullname"
+                  id="name"
+                  v-model="formData.name"
                   required
                 />
               </div>
@@ -55,22 +64,34 @@
               </div>
 
               <div class="mb-3">
-                <label for="pincode" class="form-label">Pin Code:</label>
+                <label for="phone" class="form-label">Phone:</label>
                 <input
                   type="text"
                   class="form-control"
-                  id="pincode"
-                  v-model="formData.pincode"
+                  id="phone"
+                  v-model="formData.phone"
                   required
                 />
               </div>
 
               <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary">Register</button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  :disabled="loading"
+                >
+                  {{ loading ? "Registering..." : "Register" }}
+                </button>
+              </div>
+
+              <div v-if="error" class="alert alert-danger mt-3">
+                {{ error }}
               </div>
 
               <div class="mt-3 text-center">
-                <router-link to="/login">Login here</router-link>
+                <router-link to="/login"
+                  >Already have an account? Login here</router-link
+                >
               </div>
             </form>
           </div>
@@ -81,18 +102,20 @@
 </template>
 
 <script>
-import { authService } from "@/services/api";
+import axios from "axios";
 
 export default {
   name: "CustomerRegister",
   data() {
     return {
       formData: {
+        username: "",
         email: "",
         password: "",
-        fullname: "",
+        name: "",
         address: "",
-        pincode: "",
+        phone: "",
+        role: "customer", // Set the role automatically
       },
       error: null,
       loading: false,
@@ -104,10 +127,19 @@ export default {
       this.error = null;
 
       try {
-        await authService.registerCustomer(this.formData);
-        this.$router.push("/login");
+        const response = await axios.post(
+          "http://localhost:5000/api/auth/register",
+          this.formData
+        );
+
+        // Store the token and user data
+        localStorage.setItem("token", response.data.access_token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        // Redirect to customer dashboard
+        this.$router.push("/customer");
       } catch (err) {
-        this.error = err.message || "Registration failed";
+        this.error = err.response?.data?.error || "Registration failed";
       } finally {
         this.loading = false;
       }

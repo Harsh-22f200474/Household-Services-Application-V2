@@ -111,61 +111,71 @@ def delete_service(id):
 @jwt_required()
 @admin_required
 def get_professionals():
-    professionals = Professional.query.all()
-    return jsonify([{
-        'id': prof.id,
-        'user_id': prof.user_id,
-        'name': prof.user.username,
-        'service_type': prof.service_type,
-        'experience': prof.experience,
-        'is_verified': prof.is_verified
-    } for prof in professionals]), 200
+    try:
+        professionals = User.query.filter_by(role='professional').all()
+        return jsonify([{
+            'id': prof.id,
+            'name': prof.name,
+            'email': prof.email,
+            'service_type': Service.query.get(prof.service_type_id).name if prof.service_type_id else None,
+            'is_verified': Professional.query.filter_by(user_id=prof.id).first().is_verified
+        } for prof in professionals]), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-@admin_bp.route('/professionals/<int:id>/verify', methods=['POST'])
+@admin_bp.route('/professionals/<int:professional_id>/verify', methods=['POST'])
 @jwt_required()
 @admin_required
-def verify_professional(id):
-    professional = Professional.query.get_or_404(id)
-    
+def verify_professional(professional_id):
     try:
+        professional = Professional.query.filter_by(user_id=professional_id).first()
+        if not professional:
+            return jsonify({'error': 'Professional not found'}), 404
+            
         professional.is_verified = True
         db.session.commit()
+        
         return jsonify({'message': 'Professional verified successfully'}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': str(e)}), 500
 
-@admin_bp.route('/professionals/<int:id>/block', methods=['POST'])
+@admin_bp.route('/professionals/<int:professional_id>/block', methods=['POST'])
 @jwt_required()
 @admin_required
-def block_professional(id):
-    professional = Professional.query.get_or_404(id)
-    
+def block_professional(professional_id):
     try:
-        # Block both professional and associated user
+        professional = Professional.query.filter_by(user_id=professional_id).first()
+        if not professional:
+            return jsonify({'error': 'Professional not found'}), 404
+            
         professional.is_verified = False
-        professional.user.is_active = False
         db.session.commit()
+        
         return jsonify({'message': 'Professional blocked successfully'}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': str(e)}), 500
 
 # Service Requests Management
 @admin_bp.route('/service-requests', methods=['GET'])
 @jwt_required()
 @admin_required
 def get_service_requests():
-    requests = ServiceRequest.query.all()
-    return jsonify([{
-        'id': req.id,
-        'service_id': req.service_id,
-        'customer_name': req.customer.user.username,
-        'professional_name': req.professional.user.username if req.professional else None,
-        'status': req.status,
-        'date_requested': req.date_requested.strftime('%Y-%m-%d %H:%M:%S'),
-        'date_completed': req.date_completed.strftime('%Y-%m-%d %H:%M:%S') if req.date_completed else None
-    } for req in requests]), 200
+    try:
+        requests = ServiceRequest.query.all()
+        return jsonify([{
+            'id': req.id,
+            'customer_name': req.customer.name,
+            'professional_name': req.professional.name if req.professional else None,
+            'service_name': req.service.name,
+            'status': req.status,
+            'requested_date': req.requested_date,
+            'price': req.price,
+            'address': req.address
+        } for req in requests])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Statistics and Summary
 @admin_bp.route('/statistics/ratings', methods=['GET'])

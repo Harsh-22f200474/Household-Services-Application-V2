@@ -80,13 +80,13 @@ export default {
         // Redirect based on user role
         switch (response.user.role) {
           case "admin":
-            this.$router.push("/admin/dashboard");
+            this.$router.push("/admin");
             break;
           case "professional":
-            this.$router.push("/professional/dashboard");
+            this.$router.push("/professional");
             break;
           case "customer":
-            this.$router.push("/customer/dashboard");
+            this.$router.push("/customer");
             break;
         }
       } catch (err) {

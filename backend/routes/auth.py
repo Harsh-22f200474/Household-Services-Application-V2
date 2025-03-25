@@ -12,53 +12,70 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
-    
-    # Check if user already exists
-    if User.query.filter_by(email=data['email']).first():
-        return jsonify({'error': 'Email already registered'}), 409
-    
-    # Create new user
-    hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-    new_user = User(
-        username=data['username'],
-        email=data['email'],
-        password_hash=hashed_password,
-        role=data['role']  # 'customer' or 'professional'
-    )
-    
     try:
-        db.session.add(new_user)
-        db.session.commit()
+        data = request.get_json()
+        print("Registration data received:", data)
         
-        # Create profile based on role
-        if data['role'] == 'customer':
+        # Check required fields
+        required_fields = ['username', 'email', 'password', 'name', 'role']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+
+        # Check if user already exists
+        if User.query.filter_by(email=data['email']).first():
+            return jsonify({'error': 'Email already registered'}), 400
+        if User.query.filter_by(username=data['username']).first():
+            return jsonify({'error': 'Username already taken'}), 400
+
+        # Create new user
+        new_user = User(
+            username=data['username'],
+            email=data['email'],
+            password_hash=bcrypt.generate_password_hash(data['password']).decode('utf-8'),
+            name=data['name'],
+            role=data['role'],
+            service_type_id=data.get('service_type_id') if data['role'] == 'professional' else None
+        )
+
+        db.session.add(new_user)
+        db.session.flush()  # This gets us the user.id before committing
+
+        # Create role-specific profile
+        if data['role'] == 'professional':
+            professional = Professional(
+                user_id=new_user.id,
+                service_type=str(data.get('service_type_id')),
+                experience=data.get('experience', 0),
+                description=data.get('description', ''),
+                is_verified=False  # New professionals start unverified
+            )
+            db.session.add(professional)
+        elif data['role'] == 'customer':
             customer = Customer(
                 user_id=new_user.id,
                 address=data.get('address', ''),
                 phone=data.get('phone', '')
             )
             db.session.add(customer)
-        
-        elif data['role'] == 'professional':
-            professional = Professional(
-                user_id=new_user.id,
-                service_type=data.get('service_type', ''),
-                experience=data.get('experience', 0),
-                description=data.get('description', '')
-            )
-            db.session.add(professional)
-        
+
         db.session.commit()
-        
+
         return jsonify({
             'message': 'User registered successfully',
-            'user_id': new_user.id
+            'user': {
+                'id': new_user.id,
+                'username': new_user.username,
+                'email': new_user.email,
+                'name': new_user.name,
+                'role': new_user.role
+            }
         }), 201
-        
+
     except Exception as e:
+        print("Registration error:", str(e))
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': str(e)}), 500
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -67,56 +84,33 @@ def login():
         
         if not data or 'email' not in data or 'password' not in data:
             return jsonify({'error': 'Email and password are required'}), 400
-        
+
         user = User.query.filter_by(email=data['email']).first()
         
-        if user and bcrypt.check_password_hash(user.password_hash, data['password']):
-            access_token = create_access_token(identity=str(user.id))
-            refresh_token = create_refresh_token(identity=str(user.id))
+        if not user or not bcrypt.check_password_hash(user.password_hash, data['password']):
+            return jsonify({'error': 'Invalid email or password'}), 401
 
-            # Determine dashboard URL and initial data based on role
-            if user.role == 'admin':
-                # Get initial admin dashboard data
-                services_count = Service.query.count()
-                pending_professionals = Professional.query.filter_by(is_verified=False).count()
-                active_requests = ServiceRequest.query.filter_by(status='requested').count()
-                
-                response_data = {
-                    'access_token': access_token,
-                    'refresh_token': refresh_token,
-                    'user': {
-                        'id': user.id,
-                        'username': user.username,
-                        'email': user.email,
-                        'role': user.role
-                    },
-                    'dashboard_url': '/api/admin/dashboard',
-                    'dashboard_data': {
-                        'total_services': services_count,
-                        'pending_verifications': pending_professionals,
-                        'active_requests': active_requests
-                    }
-                }
-            else:
-                response_data = {
-                    'access_token': access_token,
-                    'refresh_token': refresh_token,
-                    'user': {
-                        'id': user.id,
-                        'username': user.username,
-                        'email': user.email,
-                        'role': user.role
-                    },
-                    'dashboard_url': f'/api/{user.role}/dashboard'
-                }
-            
-            return jsonify(response_data), 200
+        # Check if professional is verified
+        if user.role == 'professional':
+            professional = Professional.query.filter_by(user_id=user.id).first()
+            if not professional or not professional.is_verified:
+                return jsonify({'error': 'Your account is pending admin approval'}), 403
+
+        access_token = create_access_token(identity=str(user.id))
         
-        return jsonify({'error': 'Invalid email or password'}), 401
+        return jsonify({
+            'access_token': access_token,
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'name': user.name,
+                'role': user.role
+            }
+        }), 200
         
     except Exception as e:
-        print(f"Login error: {str(e)}")  # For debugging
-        return jsonify({'error': 'An error occurred during login'}), 500
+        return jsonify({'error': str(e)}), 500
 
 @auth_bp.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)

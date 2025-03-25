@@ -8,7 +8,15 @@ import json
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:8080"}})
+    
+    # Enable CORS
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": ["http://localhost:8080"],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
     
     # Load configuration
     app.config.from_object(Config)
@@ -49,11 +57,13 @@ def create_app():
         from routes.admin import admin_bp
         from routes.professional import professional_bp
         from routes.customer import customer_bp
+        from routes.services import services_bp
         
         app.register_blueprint(auth_bp, url_prefix='/api/auth')
         app.register_blueprint(admin_bp, url_prefix='/api/admin')
         app.register_blueprint(professional_bp, url_prefix='/api/professional')
         app.register_blueprint(customer_bp, url_prefix='/api/customer')
+        app.register_blueprint(services_bp, url_prefix='/api')
     
     # Error handlers
     @app.errorhandler(404)

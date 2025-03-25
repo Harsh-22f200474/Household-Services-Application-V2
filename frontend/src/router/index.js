@@ -4,11 +4,13 @@ import CustomerRegister from "../components/auth/CustomerRegister.vue";
 import ProfessionalRegister from "../components/auth/ProfessionalRegister.vue";
 import AdminLayout from "@/components/admin/AdminLayout.vue";
 import AdminDashboard from "@/components/admin/AdminDashboard.vue";
+import CustomerLayout from "@/components/customer/CustomerLayout.vue";
+import ProfessionalLayout from "@/components/professional/ProfessionalLayout.vue";
 
 const routes = [
   {
     path: "/",
-    redirect: "/admin",
+    redirect: "/login",
   },
   {
     path: "/login",
@@ -27,7 +29,7 @@ const routes = [
   },
   {
     path: "/admin",
-    component: () => import("@/components/admin/AdminLayout.vue"),
+    component: AdminLayout,
     meta: { requiresAuth: true, requiresAdmin: true },
     children: [
       {
@@ -45,8 +47,53 @@ const routes = [
     ],
   },
   {
-    path: "/admin/dashboard",
-    redirect: "/admin",
+    path: "/customer",
+    component: CustomerLayout,
+    meta: { requiresAuth: true, requiresCustomer: true },
+    children: [
+      {
+        path: "",
+        component: () => import("@/components/customer/CustomerDashboard.vue"),
+      },
+      {
+        path: "search",
+        component: () => import("@/components/customer/CustomerSearch.vue"),
+      },
+      {
+        path: "summary",
+        component: () => import("@/components/customer/CustomerSummary.vue"),
+      },
+      {
+        path: "services/:id/book",
+        component: () => import("@/components/customer/ServiceBooking.vue"),
+      },
+    ],
+  },
+  {
+    path: "/professional",
+    component: ProfessionalLayout,
+    meta: { requiresAuth: true, requiresProfessional: true },
+    children: [
+      {
+        path: "",
+        component: () =>
+          import("@/components/professional/ProfessionalDashboard.vue"),
+      },
+      {
+        path: "search",
+        component: () =>
+          import("@/components/professional/ProfessionalSearch.vue"),
+      },
+      {
+        path: "summary",
+        component: () =>
+          import("@/components/professional/ProfessionalSummary.vue"),
+      },
+    ],
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    redirect: "/login",
   },
 ];
 
@@ -62,13 +109,30 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (!token) {
       next("/login");
-    } else if (
-      to.matched.some((record) => record.meta.requiresAdmin) &&
-      user.role !== "admin"
-    ) {
-      next("/login");
     } else {
-      next();
+      if (to.matched.some((record) => record.meta.requiresAdmin)) {
+        if (user.role === "admin") {
+          next();
+        } else {
+          next("/login");
+        }
+      } else if (to.matched.some((record) => record.meta.requiresCustomer)) {
+        if (user.role === "customer") {
+          next();
+        } else {
+          next("/login");
+        }
+      } else if (
+        to.matched.some((record) => record.meta.requiresProfessional)
+      ) {
+        if (user.role === "professional") {
+          next();
+        } else {
+          next("/login");
+        }
+      } else {
+        next();
+      }
     }
   } else {
     next();

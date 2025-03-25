@@ -2,6 +2,11 @@
   <div class="admin-dashboard">
     <h6>Home page/dashboard details are below</h6>
 
+    <!-- Error Alert -->
+    <div v-if="error" class="alert alert-danger mb-4">
+      {{ error }}
+    </div>
+
     <!-- Services Section -->
     <div class="card mb-4">
       <div class="card-header">
@@ -43,6 +48,9 @@
                   </button>
                 </td>
               </tr>
+              <tr v-if="services.length === 0">
+                <td colspan="4" class="text-center">No services found</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -61,8 +69,9 @@
               <tr>
                 <th>ID</th>
                 <th>Name</th>
-                <th>Experience(Yrs)</th>
-                <th>Service Name</th>
+                <th>Email</th>
+                <th>Service Type</th>
+                <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -70,17 +79,21 @@
               <tr v-for="prof in professionals" :key="prof.id">
                 <td>{{ prof.id }}</td>
                 <td>{{ prof.name }}</td>
-                <td>{{ prof.experience }}</td>
+                <td>{{ prof.email }}</td>
                 <td>{{ prof.service_type }}</td>
+                <td>{{ prof.is_verified ? "Verified" : "Pending" }}</td>
                 <td>
                   <button
                     class="btn btn-sm"
                     :class="prof.is_verified ? 'btn-danger' : 'btn-success'"
                     @click="toggleProfessionalStatus(prof)"
                   >
-                    {{ prof.is_verified ? "Block" : "Approve" }}
+                    {{ prof.is_verified ? "Block" : "Verify" }}
                   </button>
                 </td>
+              </tr>
+              <tr v-if="professionals.length === 0">
+                <td colspan="6" class="text-center">No professionals found</td>
               </tr>
             </tbody>
           </table>
@@ -110,6 +123,11 @@
                 <td>{{ request.professional_name || "Not Assigned" }}</td>
                 <td>{{ request.customer_name }}</td>
                 <td>{{ request.status }}</td>
+              </tr>
+              <tr v-if="serviceRequests.length === 0">
+                <td colspan="4" class="text-center">
+                  No service requests found
+                </td>
               </tr>
             </tbody>
           </table>
@@ -196,30 +214,50 @@ export default {
         description: "",
         base_price: "",
       },
+      error: null,
+      isDevelopment: process.env.NODE_ENV === "development",
     };
   },
   methods: {
     async fetchData() {
       try {
         const token = localStorage.getItem("token");
+        console.log("Using token:", token); // Debug log
+
         const headers = { Authorization: `Bearer ${token}` };
 
-        const [servicesRes, professionalsRes, requestsRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/admin/services", { headers }),
-          axios.get("http://localhost:5000/api/admin/professionals", {
-            headers,
-          }),
-          axios.get("http://localhost:5000/api/admin/service-requests", {
-            headers,
-          }),
-        ]);
-
+        // Fetch services
+        const servicesRes = await axios.get(
+          "http://localhost:5000/api/admin/services",
+          { headers }
+        );
+        console.log("Services response:", servicesRes.data); // Debug log
         this.services = servicesRes.data;
+
+        // Fetch professionals
+        const professionalsRes = await axios.get(
+          "http://localhost:5000/api/admin/professionals",
+          { headers }
+        );
+        console.log("Professionals response:", professionalsRes.data); // Debug log
         this.professionals = professionalsRes.data;
+
+        // Fetch service requests
+        const requestsRes = await axios.get(
+          "http://localhost:5000/api/admin/service-requests",
+          { headers }
+        );
+        console.log("Service requests response:", requestsRes.data); // Debug log
         this.serviceRequests = requestsRes.data;
       } catch (error) {
         console.error("Error fetching data:", error);
-        alert("Error loading dashboard data");
+        if (error.response) {
+          console.error("Response data:", error.response.data);
+          console.error("Response status:", error.response.status);
+          this.error = error.response.data.error || "Error loading data";
+        } else {
+          this.error = "Network error occurred";
+        }
       }
     },
 
@@ -296,30 +334,22 @@ export default {
     async toggleProfessionalStatus(professional) {
       try {
         const token = localStorage.getItem("token");
-        const headers = { Authorization: `Bearer ${token}` };
+        const endpoint = professional.is_verified ? "block" : "verify";
 
-        if (professional.is_verified) {
-          await axios.post(
-            `http://localhost:5000/api/admin/professionals/${professional.id}/block`,
-            {},
-            { headers }
-          );
-        } else {
-          await axios.post(
-            `http://localhost:5000/api/admin/professionals/${professional.id}/verify`,
-            {},
-            { headers }
-          );
-        }
+        await axios.post(
+          `http://localhost:5000/api/admin/professionals/${professional.id}/${endpoint}`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
         this.fetchData();
       } catch (error) {
         console.error("Error updating professional status:", error);
-        alert("Error updating professional status");
       }
     },
   },
   mounted() {
+    console.log("AdminDashboard mounted"); // Debug log
     this.fetchData();
   },
 };

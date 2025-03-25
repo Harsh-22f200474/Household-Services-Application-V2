@@ -9,14 +9,23 @@
           <div class="card-body">
             <form @submit.prevent="handleRegister">
               <div class="mb-3">
-                <label for="email" class="form-label"
-                  >Email ID (Username):</label
-                >
+                <label for="email" class="form-label">Email:</label>
                 <input
                   type="email"
                   class="form-control"
                   id="email"
                   v-model="formData.email"
+                  required
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="username" class="form-label">Username:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  v-model="formData.username"
                   required
                 />
               </div>
@@ -33,38 +42,38 @@
               </div>
 
               <div class="mb-3">
-                <label for="fullname" class="form-label">Fullname:</label>
+                <label for="name" class="form-label">Full Name:</label>
                 <input
                   type="text"
                   class="form-control"
-                  id="fullname"
-                  v-model="formData.fullname"
+                  id="name"
+                  v-model="formData.name"
                   required
                 />
               </div>
 
               <div class="mb-3">
-                <label for="service" class="form-label">Service Name:</label>
+                <label for="service" class="form-label">Service Type:</label>
                 <select
                   class="form-select"
                   id="service"
-                  v-model="formData.service_type"
+                  v-model="formData.service_type_id"
                   required
                 >
                   <option value="">Select a service</option>
                   <option
                     v-for="service in services"
-                    :key="service"
-                    :value="service"
+                    :key="service.id"
+                    :value="service.id"
                   >
-                    {{ service }}
+                    {{ service.name }}
                   </option>
                 </select>
               </div>
 
               <div class="mb-3">
                 <label for="experience" class="form-label"
-                  >Experience (in yrs):</label
+                  >Experience (in years):</label
                 >
                 <input
                   type="number"
@@ -72,21 +81,19 @@
                   id="experience"
                   v-model="formData.experience"
                   required
+                  min="0"
                 />
               </div>
 
               <div class="mb-3">
-                <label for="document" class="form-label"
-                  >Attach documents (PDF):</label
-                >
-                <input
-                  type="file"
+                <label for="description" class="form-label">Description:</label>
+                <textarea
                   class="form-control"
-                  id="document"
-                  @change="handleFileUpload"
-                  accept=".pdf"
+                  id="description"
+                  v-model="formData.description"
+                  rows="3"
                   required
-                />
+                ></textarea>
               </div>
 
               <div class="mb-3">
@@ -101,22 +108,34 @@
               </div>
 
               <div class="mb-3">
-                <label for="pincode" class="form-label">Pin Code:</label>
+                <label for="phone" class="form-label">Phone:</label>
                 <input
                   type="text"
                   class="form-control"
-                  id="pincode"
-                  v-model="formData.pincode"
+                  id="phone"
+                  v-model="formData.phone"
                   required
                 />
               </div>
 
               <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary">Register</button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  :disabled="loading"
+                >
+                  {{ loading ? "Registering..." : "Register" }}
+                </button>
+              </div>
+
+              <div v-if="error" class="alert alert-danger mt-3">
+                {{ error }}
               </div>
 
               <div class="mt-3 text-center">
-                <router-link to="/login">Login here</router-link>
+                <router-link to="/login"
+                  >Already have an account? Login here</router-link
+                >
               </div>
             </form>
           </div>
@@ -127,44 +146,65 @@
 </template>
 
 <script>
-import { authService } from "@/services/api";
+import axios from "axios";
 
 export default {
   name: "ProfessionalRegister",
   data() {
     return {
-      services: ["Plumbing", "Electrical", "Carpentry", "Cleaning", "Painting"],
+      services: [],
       formData: {
+        username: "",
         email: "",
         password: "",
-        fullname: "",
-        service_type: "",
+        name: "",
+        service_type_id: "",
         experience: "",
-        document: null,
+        description: "",
         address: "",
-        pincode: "",
+        phone: "",
+        role: "professional",
       },
       error: null,
       loading: false,
     };
   },
   methods: {
-    handleFileUpload(event) {
-      this.formData.document = event.target.files[0];
+    async fetchServices() {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/services/public"
+        );
+        this.services = response.data;
+      } catch (err) {
+        console.error("Error fetching services:", err);
+        this.error = "Error loading services. Please try again later.";
+      }
     },
     async handleRegister() {
       this.loading = true;
       this.error = null;
 
       try {
-        await authService.registerProfessional(this.formData);
+        await axios.post(
+          "http://localhost:5000/api/auth/register",
+          this.formData
+        );
+
+        // Show success message and redirect to login
+        alert(
+          "Registration successful! Please wait for admin approval before logging in."
+        );
         this.$router.push("/login");
       } catch (err) {
-        this.error = err.message || "Registration failed";
+        this.error = err.response?.data?.error || "Registration failed";
       } finally {
         this.loading = false;
       }
     },
+  },
+  mounted() {
+    this.fetchServices();
   },
 };
 </script>
