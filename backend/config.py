@@ -18,3 +18,19 @@ class Config:
     # Flask configuration
     SECRET_KEY = 'd3c1b8a9e7f6d5c4b3a2f1e0d9c8b7a6'
     JSON_SORT_KEYS = False
+
+    # Email configuration
+    SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+    SMTP_PORT = int(os.getenv('SMTP_PORT', 587))
+    SMTP_USERNAME = os.getenv('SMTP_USERNAME', 'harshbadala0805@gmail.com')
+    SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', 'ezcclfdztlzoulzj')
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', 'harshbadala0805@gmail.com')
+
+    # Celery configuration
+    CELERY_BROKER_URL = 'redis://localhost:6379/0'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+    CELERY_TIMEZONE = 'UTC'
+    CELERY_ENABLE_UTC = True
+
+    # Redis configuration
+    REDIS_URL = 'redis://localhost:6379/0'

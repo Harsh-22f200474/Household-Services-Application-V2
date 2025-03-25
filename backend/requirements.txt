@@ -1,6 +1,20 @@
-Flask==2.0.1
-Flask-SQLAlchemy==2.5.1
-Flask-JWT-Extended==4.3.1
+Flask==2.3.2
+Flask-SQLAlchemy==3.0.5
+Flask-JWT-Extended==4.5.2
 Flask-Bcrypt==1.0.1
 Flask-Cors==4.0.0
 pytest==6.2.5
+python-dotenv==1.0.1
+faker==37.1.0
+
+# Celery and Redis
+celery==5.3.4
+redis==5.0.1
+
+# Email and HTTP
+requests==2.31.0
+aiosmtplib==2.0.2
+
+# Development
+flower==2.0.1  # For monitoring Celery tasks
+

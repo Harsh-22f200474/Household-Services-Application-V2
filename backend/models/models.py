@@ -12,6 +12,7 @@ class User(db.Model):
     role = db.Column(db.String(20), nullable=False)  # 'admin', 'professional', 'customer'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
+    chat_webhook_url = db.Column(db.String(500), nullable=True)  # For Google Chat notifications
     
     # Add service_type_id for professionals
     service_type_id = db.Column(db.Integer, db.ForeignKey('services.id'), nullable=True)
