@@ -30,4 +30,4 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USERNAME = 'apikey'
     MAIL_PASSWORD = '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'
-    MAIL_DEFAULT_SENDER = '22f2000474@ds.study.iitm.ac.in' 
+    MAIL_DEFAULT_SENDER = '22f2000474@ds.study.iitm.ac.in'

@@ -5,6 +5,20 @@ from datetime import datetime as DateTime
 from .email import send_report_email
 from .helpers import generate_report_html
 import requests
+from flask import current_app
+
+# Initialize Celery
+celery = Celery('tasks')
+
+# Configure Celery
+celery.conf.update(
+    broker_url='redis://localhost:6379/0',
+    result_backend='redis://localhost:6379/0',
+    task_serializer='json',
+    accept_content=['json'],
+    result_serializer='json',
+    timezone='UTC'
+)
 
 def make_celery(app):
     celery = Celery(
@@ -56,7 +70,7 @@ def init_celery(app):
             report = generate_customer_report(customer.user_id)
             if 'error' not in report:
                 send_report_email(
-                    recipient='22f2000474@ds.study.iitm.ac.in',
+                    recipient='harshbadala0805@gmail.com',
                     report_data=report
                 )
         return "Monthly activity reports sent successfully!"
