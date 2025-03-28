@@ -1,118 +1,113 @@
 export default {
   template: `
-      <div class="container mt-4">
-        <div class="col-md-6 offset-md-3">
-          <div class="card">
-            <div class="card-body">
-              <h3 class="card-title">Professional Profile</h3>
-          
-          <!-- Flash Messages -->
-              <div v-if="message" :class="'alert alert-' + category" role="alert">
-                {{ message }}
-          </div>
-          
-          <!-- Form -->
-              <form @submit.prevent="submitForm" class="mt-4">
-                <div class="form-group mb-3">
-                  <label for="user_name" class="form-label">Username (Email)</label>
-              <input
-                id="user_name"
-                v-model="form.user_name"
-                class="form-control"
-                    type="email"
-                readonly
-              />
-            </div>  
-                
-                <div class="form-group mb-3">
-                  <label for="full_name" class="form-label">Full Name</label>
-              <input
-                id="full_name"
-                v-model="form.full_name"
-                class="form-control"
-                type="text"
-                    required
-              />
+      <div class="container my-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+              <h4 class="mb-0">Professional Profile</h4>
             </div>
-  
-                <div class="form-group mb-3">
-                  <label for="service_type" class="form-label">Service Type</label>
-              <select
-                id="service_type"
-                v-model="form.service_type"
-                class="form-control"
+            <div class="card-body">
+              <!-- Flash Messages -->
+              <div v-if="message" :class="'alert alert-' + category" role="alert" class="mb-3">
+                {{ message }}
+              </div>
+              <!-- Profile Form -->
+              <form @submit.prevent="submitForm" class="mt-3">
+                <div class="mb-3">
+                  <label for="user_name" class="form-label">Username (Email)</label>
+                  <input
+                    id="user_name"
+                    v-model="form.user_name"
+                    type="email"
+                    class="form-control"
+                    readonly
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="full_name" class="form-label">Full Name</label>
+                  <input
+                    id="full_name"
+                    v-model="form.full_name"
+                    type="text"
+                    class="form-control"
                     required
-              >
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="service_type" class="form-label">Service Type</label>
+                  <select
+                    id="service_type"
+                    v-model="form.service_type"
+                    class="form-select"
+                    required
+                  >
                     <option value="">Select a service type</option>
                     <option value="Cleaning">Cleaning Services</option>
                     <option value="Plumbing">Plumbing Services</option>
                     <option value="Electrical">Electrical Services</option>
                     <option value="Carpentry">Carpentry Services</option>
-              </select>
-            </div>
-  
-                <div class="form-group mb-3">
+                  </select>
+                </div>
+                <div class="mb-3">
                   <label for="experience" class="form-label">Years of Experience</label>
-              <input
-                id="experience"
-                v-model="form.experience"
-                class="form-control"
+                  <input
+                    id="experience"
+                    v-model="form.experience"
                     type="number"
                     min="0"
+                    class="form-control"
                     required
-              />
-            </div>
-  
-                <div class="form-group mb-3">
+                  />
+                </div>
+                <div class="mb-3">
                   <label for="file" class="form-label">
                     Certification/License Document
                     <small class="text-muted">(PDF, JPG, PNG only)</small>
                   </label>
-              <input
-                id="file"
-                type="file"
-                class="form-control"
-                @change="handleFileUpload"
+                  <input
+                    id="file"
+                    type="file"
+                    class="form-control"
+                    @change="handleFileUpload"
                     accept=".pdf,.jpg,.jpeg,.png,.gif"
                     required
-              />
-            </div>
-  
-                <div class="form-group mb-3">
+                  />
+                </div>
+                <div class="mb-3">
                   <label for="address" class="form-label">Address</label>
-              <textarea
-                id="address"
-                v-model="form.address"
-                class="form-control"
+                  <textarea
+                    id="address"
+                    v-model="form.address"
                     rows="3"
+                    class="form-control"
                     required
-              ></textarea>
-            </div>
-  
-                <div class="form-group mb-3">
+                  ></textarea>
+                </div>
+                <div class="mb-3">
                   <label for="pin_code" class="form-label">PIN Code</label>
-              <input
-                id="pin_code"
-                v-model="form.pin_code"
-                class="form-control"
-                type="text"
+                  <input
+                    id="pin_code"
+                    v-model="form.pin_code"
+                    type="text"
                     pattern="[0-9]{6}"
                     title="Please enter a valid 6-digit PIN code"
+                    class="form-control"
                     required
-              />
-            </div>
-  
-                <div class="form-group text-center mt-4">
+                  />
+                </div>
+                <div class="text-center mt-4">
                   <button type="submit" class="btn btn-primary" :disabled="isLoading">
-                    <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                    <span v-if="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
                     {{ isLoading ? 'Saving...' : 'Save Profile' }}
-              </button>
-            </div>
-          </form>
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
       </div>
+    </div>
     `,
   data() {
     return {

@@ -1,25 +1,27 @@
 export default {
   template: `
-    <div class="row">
-        <div class="col-md-4 offset-md-4">        
-            <h3>Admin Login</h3>
-            <div v-if="message" :class="'alert alert-' + category" role="alert">
-                {{ message }}
+    <div class="container d-flex align-items-center justify-content-center vh-100">
+      <div class="card shadow-sm" style="max-width: 400px; width: 100%;">
+        <div class="card-body">
+          <h3 class="card-title text-center mb-4">Admin Login</h3>
+          <div v-if="message" :class="'alert alert-' + category" role="alert">
+            {{ message }}
+          </div>
+          <form @submit.prevent="submitLogin">
+            <div class="mb-3">
+              <label for="username" class="form-label">Username:</label>
+              <input type="text" id="username" v-model="username" class="form-control" required>
             </div>
-            <form @submit.prevent="submitLogin"> <!-- Prevent default form submission -->
-                <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" v-model="username" required> <!-- Use v-model to bind input -->
-                </div>
-                <div class="form-group">    
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" v-model="password" required> <!-- Use v-model to bind input -->
-                </div> 
-                <div class="form-group">       
-                    <input type="submit" value="Login" class="btn btn-primary btn-sm btn-spacing">
-                </div>    
-            </form>
+            <div class="mb-3">
+              <label for="password" class="form-label">Password:</label>
+              <input type="password" id="password" v-model="password" class="form-control" required>
+            </div>
+            <div class="d-grid">
+              <input type="submit" value="Login" class="btn btn-primary">
+            </div>
+          </form>
         </div>
+      </div>
     </div>
     `,
   data() {

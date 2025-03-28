@@ -17,8 +17,8 @@ export default {
   methods: {
     getStatusBadgeClass(status) {
       const statusClasses = {
-        requested: "bg-info",
-        accepted: "bg-primary",
+        requested: "bg-warning",
+        accepted: "bg-info",
         rejected: "bg-danger",
         completed: "bg-success",
       };
@@ -166,82 +166,92 @@ export default {
     },
   },
   template: `
-        <div class="container mt-4">
-            <div v-if="message" :class="'alert alert-' + category" role="alert">
-                {{ message }}
-                <div v-if="category === 'warning' || category === 'danger'" class="mt-2">
-                    <router-link to="/customer/dashboard" class="btn btn-primary btn-sm">Back to Dashboard</router-link>
-                </div>
-            </div>
-
-            <div v-if="isLoading" class="text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-
-            <div v-else-if="!serviceRequest" class="card">
-                <div class="card-body">
-                    <h4 class="text-danger">Service Request Not Found</h4>
-                    <p>The service request you're trying to review could not be found or you don't have permission to access it.</p>
-                    <router-link to="/customer/dashboard" class="btn btn-primary">Back to Dashboard</router-link>
-                </div>
-            </div>
-
-            <div v-else-if="serviceRequest && serviceRequest.service_status !== 'completed'" class="card">
-                <div class="card-body">
-                    <h4 class="text-warning">Cannot Add Review Yet</h4>
-                    <p>This service request is not completed yet. You can only add a review once the service is marked as completed.</p>
-                    <p>Current Status: <span class="badge" :class="getStatusBadgeClass(serviceRequest.service_status)">{{ serviceRequest.service_status }}</span></p>
-                    <router-link to="/customer/dashboard" class="btn btn-primary">Back to Dashboard</router-link>
-                </div>
-            </div>
-
-            <div v-else-if="serviceRequest && professional && service" class="card">
-                <div class="card-header">
-                    <h4>Add Review</h4>
-                </div>
-                <div class="card-body">
-                    <div class="mb-4">
-                        <h5>Service Details</h5>
-                        <p><strong>Service:</strong> {{ service.name }}</p>
-                        <p><strong>Professional:</strong> {{ professional.full_name }}</p>
-                        <p><strong>Experience:</strong> {{ professional.experience }}</p>
-                    </div>
-
-                    <div class="mb-4">
-                        <h5>Your Rating</h5>
-                        <div class="btn-group" role="group">
-                            <button 
-                                v-for="star in 5" 
-                                :key="star"
-                                type="button"
-                                class="btn"
-                                :class="star <= rating ? 'btn-warning' : 'btn-outline-warning'"
-                                @click="rating = star"
-                            >
-                                ★
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="comment" class="form-label">Your Review (Optional)</label>
-                        <textarea 
-                            id="comment"
-                            v-model="comment"
-                            class="form-control"
-                            rows="3"
-                            placeholder="Write your review here..."
-                        ></textarea>
-                    </div>
-
-                    <div class="d-flex justify-content-between">
-                        <router-link to="/customer/dashboard" class="btn btn-secondary">Cancel</router-link>
-                        <button @click="submitReview" class="btn btn-primary">Submit Review</button>
-                    </div>
-                </div>
-            </div>
+        <div class="container my-5">
+      <!-- Alert Message -->
+      <div v-if="message" :class="'alert alert-' + category" role="alert">
+        {{ message }}
+        <div v-if="category === 'warning' || category === 'danger'" class="mt-2">
+          <router-link to="/customer/dashboard" class="btn btn-primary btn-sm">Back to Dashboard</router-link>
         </div>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div v-if="isLoading" class="text-center my-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Service Request Not Found -->
+      <div v-else-if="!serviceRequest" class="card shadow-sm">
+        <div class="card-body">
+          <h4 class="text-danger">Service Request Not Found</h4>
+          <p>The service request you're trying to review could not be found or you don't have permission to access it.</p>
+          <router-link to="/customer/dashboard" class="btn btn-primary">Back to Dashboard</router-link>
+        </div>
+      </div>
+
+      <!-- Cannot Add Review Yet -->
+      <div v-else-if="serviceRequest && serviceRequest.service_status !== 'completed'" class="card shadow-sm">
+        <div class="card-body">
+          <h4 class="text-warning">Cannot Add Review Yet</h4>
+          <p>This service request is not completed yet. You can only add a review once the service is marked as completed.</p>
+          <p>
+            Current Status: 
+            <span class="badge" :class="getStatusBadgeClass(serviceRequest.service_status)">
+              {{ serviceRequest.service_status }}
+            </span>
+          </p>
+          <router-link to="/customer/dashboard" class="btn btn-primary">Back to Dashboard</router-link>
+        </div>
+      </div>
+
+      <!-- Add Review Form -->
+      <div v-else-if="serviceRequest && professional && service" class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Add Review</h4>
+        </div>
+        <div class="card-body">
+          <div class="mb-4">
+            <h5>Service Details</h5>
+            <p><strong>Service:</strong> {{ service.name }}</p>
+            <p><strong>Professional:</strong> {{ professional.full_name }}</p>
+            <p><strong>Experience:</strong> {{ professional.experience }}</p>
+          </div>
+
+          <div class="mb-4">
+            <h5>Your Rating</h5>
+            <div class="btn-group" role="group">
+              <button 
+                v-for="star in 5" 
+                :key="star"
+                type="button"
+                class="btn"
+                :class="star <= rating ? 'btn-warning' : 'btn-outline-warning'"
+                @click="rating = star"
+              >
+                ★
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="comment" class="form-label">Your Review (Optional)</label>
+            <textarea 
+              id="comment"
+              v-model="comment"
+              class="form-control"
+              rows="3"
+              placeholder="Write your review here..."
+            ></textarea>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <router-link to="/customer/dashboard" class="btn btn-secondary">Cancel</router-link>
+            <button @click="submitReview" class="btn btn-primary">Submit Review</button>
+          </div>
+        </div>
+      </div>
+    </div>
     `,
 };

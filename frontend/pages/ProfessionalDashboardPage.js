@@ -1,163 +1,167 @@
 export default {
   template: `
-    <div class="container mt-4">
-        <!-- Flash Messages -->
-                <div v-if="message" :class="'alert alert-' + category" role="alert">
-                        {{ message }}
-                </div>        
+    <div class="container my-5">
+      <!-- Flash Messages -->
+      <div v-if="message" :class="'alert alert-' + category" role="alert">
+        {{ message }}
+      </div>
 
-        <!-- Loading State -->
-        <div v-if="isLoading" class="text-center my-4">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
+      <!-- Pending Service Requests Card -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+          <h4 class="mb-0">Pending Service Requests</h4>
         </div>
-
-        <!-- Service Requests -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h4 class="card-title">Pending Service Requests</h4>
-                <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Customer Name</th>
-                            <th>Service</th>
-                            <th>Request Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                            <tr v-for="request in pendingRequests" :key="request.id">
-                                <td>{{ custDict[request.customer_id]?.full_name || 'Unknown Customer' }}</td>
-                                <td>{{ serviceDict[request.service_id]?.name || 'Unknown Service' }}</td>
-                                <td>{{ formatDate(request.date_of_request) }}</td>
-                                <td>
-                                    <span :class="getStatusBadgeClass(request.service_status)">
-                                        {{ request.service_status }}
-                                    </span>
-                                </td>
-                            <td>
-                                    <button 
-                                        @click="updateRequestStatus(request.id, 'accepted')" 
-                                        class="btn btn-success btn-sm me-2"
-                                        :disabled="isUpdating"
-                                    >
-                                        Accept
-                                    </button>
-                                    <button 
-                                        @click="updateRequestStatus(request.id, 'rejected')" 
-                                        class="btn btn-danger btn-sm"
-                                        :disabled="isUpdating"
-                                    >
-                                        Reject
-                                    </button>
-                            </td>
-                        </tr>
-                            <tr v-if="pendingRequests.length === 0">
-                                <td colspan="5" class="text-center">No pending requests</td>
-                        </tr>
-                    </tbody>
-                </table>
-                </div>
-            </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Customer Name</th>
+                  <th>Service</th>
+                  <th>Request Date</th>
+                  <th>Status</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="request in pendingRequests" :key="request.id">
+                  <td>{{ custDict[request.customer_id]?.full_name || 'Unknown Customer' }}</td>
+                  <td>{{ serviceDict[request.service_id]?.name || 'Unknown Service' }}</td>
+                  <td>{{ formatDate(request.date_of_request) }}</td>
+                  <td>
+                    <span :class="getStatusBadgeClass(request.service_status)">
+                      {{ request.service_status }}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <button 
+                      @click="updateRequestStatus(request.id, 'accepted')" 
+                      class="btn btn-success btn-sm me-2"
+                      :disabled="isUpdating"
+                    >
+                      Accept
+                    </button>
+                    <button 
+                      @click="updateRequestStatus(request.id, 'rejected')" 
+                      class="btn btn-danger btn-sm"
+                      :disabled="isUpdating"
+                    >
+                      Reject
+                    </button>
+                  </td>
+                </tr>
+                <tr v-if="pendingRequests.length === 0">
+                  <td colspan="5" class="text-center">No pending requests</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
 
-        <!-- Service History -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h4 class="card-title">Service History</h4>
-                <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Customer Name</th>
-                            <th>Service</th>
-                            <th>Status</th>
-                            <th>Completion Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="request in otherRequests" :key="request.id">
-                                <td>{{ custDict[request.customer_id]?.full_name || 'Unknown Customer' }}</td>
-                                <td>{{ serviceDict[request.service_id]?.name || 'Unknown Service' }}</td>
-                                <td>
-                                    <span :class="getStatusBadgeClass(request.service_status)">
-                                        {{ request.service_status }}
-                                    </span>
-                                </td>
-                                <td>{{ formatDate(request.date_of_completion) }}</td>
-                            </tr>
-                            <tr v-if="otherRequests.length === 0">
-                                <td colspan="5" class="text-center">No service history</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+      <!-- Service History Card -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-secondary text-white">
+          <h4 class="mb-0">Service History</h4>
         </div>
-
-        <!-- Reviews Section -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h4 class="card-title">My Reviews</h4>
-                <div class="row mb-4">
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body text-center">
-                                <h5 class="card-title">Average Rating</h5>
-                                <h2>{{ reviewStats.average_rating?.toFixed(1) || 0 }} ★</h2>
-                                <p class="mb-0">Total Reviews: {{ reviewStats.total_reviews || 0 }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-8">
-                        <h5>Rating Distribution</h5>
-                        <div v-for="i in 5" :key="i" class="mb-2">
-                            <div class="d-flex align-items-center">
-                                <span class="me-2" style="width: 60px;">{{ i }} stars</span>
-                                <div class="progress flex-grow-1">
-                                    <div 
-                                        class="progress-bar bg-warning" 
-                                        :style="{ width: getDistributionPercentage(i) + '%' }"
-                                    ></div>
-                                </div>
-                                <span class="ms-2">{{ reviewStats.rating_distribution[i + '_star'] || 0 }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Customer</th>
-                                <th>Rating</th>
-                                <th>Comment</th>
-                                <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                            <tr v-for="review in reviews" :key="review.id">
-                                <td>{{ custDict[review.customer_id]?.full_name || 'Unknown Customer' }}</td>
-                                <td>
-                                    <span class="badge bg-warning text-dark">
-                                        {{ review.rating }} ★
-                                    </span>
-                                </td>
-                                <td>{{ review.comment || '-' }}</td>
-                                <td>{{ formatDate(review.created_at) }}</td>
-                            </tr>
-                            <tr v-if="reviews.length === 0">
-                                <td colspan="4" class="text-center">No reviews yet</td>
-                        </tr>
-                    </tbody>
-                </table>
-                </div>
-            </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Customer Name</th>
+                  <th>Service</th>
+                  <th>Status</th>
+                  <th>Completion Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="request in otherRequests" :key="request.id">
+                  <td>{{ custDict[request.customer_id]?.full_name || 'Unknown Customer' }}</td>
+                  <td>{{ serviceDict[request.service_id]?.name || 'Unknown Service' }}</td>
+                  <td>
+                    <span :class="getStatusBadgeClass(request.service_status)">
+                      {{ request.service_status }}
+                    </span>
+                  </td>
+                  <td>{{ formatDate(request.date_of_completion) }}</td>
+                </tr>
+                <tr v-if="otherRequests.length === 0">
+                  <td colspan="4" class="text-center">No service history</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
+
+      <!-- Reviews Section Card -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">My Reviews</h4>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <!-- Average Rating -->
+            <div class="col-md-4">
+              <div class="card">
+                <div class="card-body text-center">
+                  <h5 class="card-title">Average Rating</h5>
+                  <h2>{{ reviewStats.average_rating?.toFixed(1) || 0 }} ★</h2>
+                  <p class="mb-0">Total Reviews: {{ reviewStats.total_reviews || 0 }}</p>
+                </div>
+              </div>
+            </div>
+            <!-- Rating Distribution -->
+            <div class="col-md-8">
+              <h5 class="mb-3">Rating Distribution</h5>
+              <div v-for="i in 5" :key="i" class="mb-2">
+                <div class="d-flex align-items-center">
+                  <span class="me-2" style="width: 60px;">{{ i }} stars</span>
+                  <div class="progress flex-grow-1">
+                    <div 
+                      class="progress-bar bg-warning" 
+                      :style="{ width: getDistributionPercentage(i) + '%' }"
+                    ></div>
+                  </div>
+                  <span class="ms-2">
+                    {{ reviewStats.rating_distribution[i + '_star'] || 0 }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reviews Table -->
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Rating</th>
+                  <th>Comment</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="review in reviews" :key="review.id">
+                  <td>{{ custDict[review.customer_id]?.full_name || 'Unknown Customer' }}</td>
+                  <td>
+                    <span class="badge bg-warning text-dark">
+                      {{ review.rating }} ★
+                    </span>
+                  </td>
+                  <td>{{ review.comment || '-' }}</td>
+                  <td>{{ formatDate(review.created_at) }}</td>
+                </tr>
+                <tr v-if="reviews.length === 0">
+                  <td colspan="4" class="text-center">No reviews yet</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
     `,
   data() {

@@ -1,77 +1,75 @@
 export default {
   template: `
-        <div class="container mt-4">
-            <div class="row">
-                <div class="col-md-12">  
-                    <div class="card">
-                        <div class="card-body">
-                            <h3 class="card-title">Export Service Requests</h3>
-                            
-                            <!-- Alert Messages -->
-                            <div v-if="message" :class="'alert alert-' + category" role="alert">
-                                {{ message }}
-                            </div>
-                            
-                            <!-- Export Form -->
-                            <div class="mb-4">
-                                <div class="form-group">
-                                    <label for="professionalId" class="form-label">Professional ID:</label>
-                                    <div class="input-group">
-                                        <input 
-                                            type="number" 
-                                            class="form-control" 
-                                            id="professionalId" 
-                                            v-model="professionalId" 
-                                            placeholder="Enter Professional ID" 
-                                            :disabled="isProcessing"
-                                        />
-                                        <button 
-                                            class="btn btn-primary" 
-                                            @click="triggerExport" 
-                                            :disabled="isProcessing || !professionalId"
-                                        >
-                                            <span v-if="isProcessing" class="spinner-border spinner-border-sm" role="status"></span>
-                        {{ isProcessing ? 'Processing...' : 'Export Service Requests' }}
-                    </button> 
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Available Downloads -->
-                            <div class="mt-4">
-                                <h4>Available Reports</h4>
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Filename</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr v-for="(file, index) in downloads" :key="index">
-                                                <td>{{ file }}</td>
-                                                <td>
-                                                    <button 
-                                                        class="btn btn-sm btn-success" 
-                                                        @click="downloadFile(file)"
-                                                    >
-                                                        Download
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            <tr v-if="downloads.length === 0">
-                                                <td colspan="2" class="text-center">No reports available</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <div class="container my-5">
+      <div class="row">
+        <div class="col-12">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h3 class="card-title mb-4">Export Service Requests</h3>
+              
+              <!-- Alert Messages -->
+              <div v-if="message" :class="'alert alert-' + category" role="alert">
+                {{ message }}
+              </div>
+              
+              <!-- Export Form -->
+              <div class="mb-4">
+                <div class="mb-3">
+                  <label for="professionalId" class="form-label">Professional ID:</label>
+                  <div class="input-group">
+                    <input 
+                      type="number" 
+                      id="professionalId" 
+                      v-model="professionalId" 
+                      class="form-control" 
+                      placeholder="Enter Professional ID" 
+                      :disabled="isProcessing"
+                    >
+                    <button 
+                      class="btn btn-primary" 
+                      @click="triggerExport" 
+                      :disabled="isProcessing || !professionalId"
+                    >
+                      <span v-if="isProcessing" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                      {{ isProcessing ? 'Processing...' : 'Export Service Requests' }}
+                    </button>
+                  </div>
                 </div>
+              </div>
+              
+              <!-- Available Downloads -->
+              <div class="mt-4">
+                <h4 class="mb-3">Available Reports</h4>
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Filename</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(file, index) in downloads" :key="index">
+                        <td>{{ file }}</td>
+                        <td>
+                          <button class="btn btn-sm btn-success" @click="downloadFile(file)">
+                            Download
+                          </button>
+                        </td>
+                      </tr>
+                      <tr v-if="downloads.length === 0">
+                        <td colspan="2" class="text-center">No reports available</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
             </div>
+          </div>
         </div>
+      </div>
+    </div>
     `,
   data() {
     return {

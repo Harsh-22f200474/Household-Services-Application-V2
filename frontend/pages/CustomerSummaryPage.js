@@ -1,62 +1,69 @@
 export default {
   template: `
-      <div class="container mt-4">
-        <div class="row">
-          <div class="col-md-12 text-center">        
-            <h3>Customer Summary</h3>
-          </div>
+      <div class="container my-5">
+      <!-- Page Title -->
+      <div class="row mb-4">
+        <div class="col-12 text-center">
+          <h3>Customer Summary</h3>
         </div>
+      </div>
 
-        <!-- Alert Messages -->
-        <div v-if="message" :class="'alert alert-' + category" role="alert">
-          {{ message }}
+      <!-- Alert Messages -->
+      <div v-if="message" :class="'alert alert-' + category" role="alert" class="mb-4">
+        {{ message }}
+      </div>
+
+      <!-- My Reviews Card -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">My Reviews</h4>
         </div>
-
-        <!-- Service History -->
-        <div class="card mt-4">
-          <div class="card-body">
-            <h4 class="card-title">My Reviews</h4>
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Professional</th>
-                    <th>Rating</th>
-                    <th>Comment</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="review in reviews" :key="review.id">
-                    <td>{{ review.professional_name }}</td>
-                    <td>
-                      <span class="badge bg-primary">{{ review.rating }} ★</span>
-                    </td>
-                    <td>{{ review.comment || '-' }}</td>
-                    <td>{{ formatDate(review.created_at) }}</td>
-                  </tr>
-                  <tr v-if="reviews.length === 0">
-                    <td colspan="4" class="text-center">No reviews given yet</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Service Requests Chart -->
-        <div class="card mt-4">
-          <div class="card-body">
-            <h4 class="card-title">Service Requests History</h4>
-            <div v-if="isLoading" class="text-center">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-            </div>
-            <canvas v-else id="serviceRequests" width="400" height="200"></canvas>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Professional</th>
+                  <th>Rating</th>
+                  <th>Comment</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="review in reviews" :key="review.id">
+                  <td>{{ review.professional_name }}</td>
+                  <td>
+                    <span class="badge bg-primary">{{ review.rating }} ★</span>
+                  </td>
+                  <td>{{ review.comment || '-' }}</td>
+                  <td>{{ formatDate(review.created_at) }}</td>
+                </tr>
+                <tr v-if="reviews.length === 0">
+                  <td colspan="4" class="text-center">No reviews given yet</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+
+      <!-- Service Requests History Card -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Service Requests History</h4>
+        </div>
+        <div class="card-body">
+          <div v-if="isLoading" class="text-center my-4">
+            <div class="spinner-border text-light" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+          <div v-else>
+            <canvas id="serviceRequests" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
     `,
   data() {
     return {

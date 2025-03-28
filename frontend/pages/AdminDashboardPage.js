@@ -13,107 +13,129 @@ export default {
     };
   },
   template: `
-    <div>
-        <div v-if="message" :class="'alert alert-' + category" role="alert">
-            {{ message }}
+    <div class="container my-5">
+      <div v-if="message" :class="'alert alert-' + category" role="alert">
+        {{ message }}
+      </div>
+
+      <!-- Manage Services -->
+      <div class="mb-5">
+        <h3 class="mb-3">Manage Services</h3>
+        <div class="d-flex justify-content-end mb-3">
+          <router-link to="/admin/services/create_services" class="btn btn-outline-success me-2">
+            Create Service
+          </router-link>
+          <router-link to="/admin/downloadReport" class="btn btn-outline-success">
+            Download Report
+          </router-link>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <h3>Manage Services</h3>
-                <div class="d-flex justify-content-end mb-3">
-                    <router-link to="/admin/services/create_services" class="btn btn-outline-success me-2">Create Service</router-link>
-                    <router-link to="/admin/downloadReport" class="btn btn-outline-success">Download Report</router-link>
-                </div>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Description</th>
-                            <th>Base Price</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="service in services" :key="service.id">
-                            <td>{{ service.id }}</td>
-                            <td>{{ service.name }}</td>
-                            <td>{{ service.service_type }}</td>
-                            <td>{{ service.description }}</td>
-                            <td>₹{{ service.price }}</td>
-                            <td>
-                                <router-link :to="'/admin/services/update/' + service.id" class="btn btn-warning btn-sm me-2">Edit</router-link>
-                                <button @click="deleteService(service.id)" class="btn btn-danger btn-sm">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h3>Manage Professionals</h3>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Service</th>
-                            <th>Experience</th>
-                            <th>Reviews</th>
-                            <th>Doc</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="professional in professionalProfile" :key="professional.id">
-                            <td>{{ professional.id }}</td>
-                            <td>{{ professional.full_name }}</td>
-                            <td>{{ professional.service_type }}</td>
-                            <td>{{ professional.experience }}</td>
-                            <td>{{ professional.reviews }}</td>
-                            <td><a href="#" @click.prevent="downloadFile(professional.filename)">{{ professional.filename }}</a></td>
-                            <td>
-                                <button 
-                                    @click="toggleApproval(professional.user_id)" 
-                                    :class="['btn btn-sm me-2', userDict[professional.user_id]?.approve ? 'btn-secondary' : 'btn-success']"
-                                >
-                                    {{ userDict[professional.user_id]?.approve ? 'Reject' : 'Approve' }}
-                                </button>
-
-                                <button 
-                                    @click="toggleBlock(professional.user_id)" 
-                                    :class="['btn btn-sm', userDict[professional.user_id]?.blocked ? 'btn-success' : 'btn-danger']"
-                                >
-                                    {{ userDict[professional.user_id]?.blocked ? 'Unblock' : 'Block' }}
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-
-                <h3>Service Requests</h3>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Assigned Professional</th>
-                            <th>Requested Date</th>
-                            <th>Status</th>
-                            <th>Customer Remarks</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="serviceRequest in serviceRequests" :key="serviceRequest.id">
-                            <td>{{ serviceRequest.id }}</td>
-                            <td>{{ profDict[serviceRequest.professional_id]?.full_name }}</td>
-                            <td>{{ formatDate(serviceRequest.date_of_request) }}</td>
-                            <td>{{ serviceRequest.service_status }}</td>
-                            <td>{{ serviceRequest.remarks || "" }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Base Price</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="service in services" :key="service.id">
+                <td>{{ service.id }}</td>
+                <td>{{ service.name }}</td>
+                <td>{{ service.service_type }}</td>
+                <td>{{ service.description }}</td>
+                <td>₹{{ service.price }}</td>
+                <td>
+                  <router-link :to="'/admin/services/update/' + service.id" class="btn btn-warning btn-sm me-2">
+                    Edit
+                  </router-link>
+                  <button @click="deleteService(service.id)" class="btn btn-danger btn-sm">
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </div>
+
+      <!-- Manage Professionals -->
+      <div class="mb-5">
+        <h3 class="mb-3">Manage Professionals</h3>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Service</th>
+                <th>Experience</th>
+                <th>Reviews</th>
+                <th>Doc</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="professional in professionalProfile" :key="professional.id">
+                <td>{{ professional.id }}</td>
+                <td>{{ professional.full_name }}</td>
+                <td>{{ professional.service_type }}</td>
+                <td>{{ professional.experience }}</td>
+                <td>{{ professional.reviews }}</td>
+                <td>
+                  <a href="#" @click.prevent="downloadFile(professional.filename)">
+                    {{ professional.filename }}
+                  </a>
+                </td>
+                <td>
+                  <button 
+                    @click="toggleApproval(professional.user_id)" 
+                    :class="['btn btn-sm me-2', userDict[professional.user_id]?.approve ? 'btn-secondary' : 'btn-success']"
+                  >
+                    {{ userDict[professional.user_id]?.approve ? 'Reject' : 'Approve' }}
+                  </button>
+                  <button 
+                    @click="toggleBlock(professional.user_id)" 
+                    :class="['btn btn-sm', userDict[professional.user_id]?.blocked ? 'btn-success' : 'btn-danger']"
+                  >
+                    {{ userDict[professional.user_id]?.blocked ? 'Unblock' : 'Block' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Service Requests -->
+      <div>
+        <h3 class="mb-3">Service Requests</h3>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Assigned Professional</th>
+                <th>Requested Date</th>
+                <th>Status</th>
+                <th>Customer Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="serviceRequest in serviceRequests" :key="serviceRequest.id">
+                <td>{{ serviceRequest.id }}</td>
+                <td>{{ profDict[serviceRequest.professional_id]?.full_name }}</td>
+                <td>{{ formatDate(serviceRequest.date_of_request) }}</td>
+                <td>{{ serviceRequest.service_status }}</td>
+                <td>{{ serviceRequest.remarks || "" }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
     `,
   mounted() {

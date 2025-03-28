@@ -1,34 +1,44 @@
 export default {
   template: `
-        <div class="row">
-            <div class="col-md-4 offset-md-4">        
-                <h3>Register</h3>
-                <div v-if="message" :class="'alert alert-' + category" role="alert">
-                    {{ message }}
-                </div>
-                <form @submit.prevent="submitRegister">
-                    <div class="form-group">
-                        <label for="username">Username:</label>
-                        <input type="text" id="username" v-model="username" required> 
-                    </div>
-                    <div class="form-group">    
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" v-model="password" required> 
-                    </div> 
-                    <div class="form-group">
-                        <label for="role">Select Role:</label>
-                        <select v-model="role" id="role" >
-                            <option value="customer">Customer</option>
-                            <option value="professional">Professional</option>
-                        </select>
-                    </div>    
-                    <div class="form-group text-center">       
-                        <input type="submit" value="Register" class="btn btn-primary btn-sm btn-spacing">
-                        <router-link to="/login" class="btn btn-secondary btn-sm btn-spacing">Cancel</router-link>  
-                    </div>    
-                </form>
+        <div class="container my-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white text-center">
+              <h4 class="mb-0">Register</h4>
             </div>
+            <div class="card-body">
+              <!-- Alert Message -->
+              <div v-if="message" :class="'alert alert-' + category" role="alert" class="mb-3">
+                {{ message }}
+              </div>
+              <!-- Registration Form -->
+              <form @submit.prevent="submitRegister">
+                <div class="mb-3">
+                  <label for="username" class="form-label">Username</label>
+                  <input type="text" id="username" v-model="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                  <label for="password" class="form-label">Password</label>
+                  <input type="password" id="password" v-model="password" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                  <label for="role" class="form-label">Select Role</label>
+                  <select id="role" v-model="role" class="form-select" required>
+                    <option value="customer">Customer</option>
+                    <option value="professional">Professional</option>
+                  </select>
+                </div>
+                <div class="text-center">
+                  <button type="submit" class="btn btn-primary btn-sm me-2">Register</button>
+                  <router-link to="/login" class="btn btn-secondary btn-sm">Cancel</router-link>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
+      </div>
+    </div>
     `,
   data() {
     return {

@@ -1,43 +1,51 @@
 export default {
   template: `
-      <div class="container mt-4">
-        <div class="row">
-          <div class="col-md-12 text-center">        
-            <h3 class="mb-4">Professional Summary</h3>
-          </div>
+      <div class="container my-5">
+      <!-- Page Title -->
+      <div class="row">
+        <div class="col-12 text-center">
+          <h3 class="mb-4">Professional Summary</h3>
         </div>
+      </div>
 
-        <!-- Loading State -->
-        <div v-if="isLoading" class="text-center my-4">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
+      <!-- Loading State -->
+      <div v-if="isLoading" class="text-center my-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
         </div>
+      </div>
 
-        <!-- Error Message -->
-        <div v-if="error" class="alert alert-danger" role="alert">
-          {{ error }}
-        </div>
+      <!-- Error Message -->
+      <div v-if="error" class="alert alert-danger" role="alert">
+        {{ error }}
+      </div>
 
-        <div v-show="!isLoading" class="row">
-          <div class="col-md-6">
-            <div class="card mb-4">
-              <div class="card-body">
-                <h4 class="card-title">Reviews/Ratings</h4>
-                <canvas ref="reviewsDoughnutChart"></canvas>
-              </div>
+      <!-- Summary Charts -->
+      <div v-show="!isLoading && !error" class="row">
+        <!-- Reviews / Ratings Chart -->
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+              <h4 class="mb-0">Reviews / Ratings</h4>
+            </div>
+            <div class="card-body">
+              <canvas ref="reviewsDoughnutChart"></canvas>
             </div>
           </div>
-          <div class="col-md-6">
-            <div class="card mb-4">
-              <div class="card-body">
-                <h4 class="card-title">Service Requests</h4>
-                <canvas ref="serviceRequestsChart"></canvas>
-              </div>
+        </div>
+        <!-- Service Requests Chart -->
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+              <h4 class="mb-0">Service Requests</h4>
+            </div>
+            <div class="card-body">
+              <canvas ref="serviceRequestsChart"></canvas>
             </div>
           </div>
         </div>
       </div>
+    </div>
     `,
   data() {
     return {

@@ -95,47 +95,75 @@ export default {
     },
   },
   template: `
-        <div class="row">
-            <div class="col-md-4 offset-md-4">
-                <h3>{{ editing ? 'Edit Service' : 'New Service' }}</h3>
-                
-                <div v-if="message" :class="'alert alert-' + category" role="alert">
-                    {{ message }}
-                </div>
+        <div class="container d-flex align-items-center justify-content-center vh-100">
+      <div class="card shadow-sm" style="width: 100%; max-width: 500px;">
+        <div class="card-body">
+          <h3 class="card-title text-center mb-4">
+            {{ editing ? 'Edit Service' : 'New Service' }}
+          </h3>
+          
+          <div v-if="message" :class="'alert alert-' + category" role="alert">
+            {{ message }}
+          </div>
 
-                <form @submit.prevent="submitForm">
-                    <div class="form-group mb-3">
-                        <label for="service_type">Service Type</label>
-                        <select id="service_type" v-model="service.service_type" class="form-control" required>
-                            <option value="">Select a service type</option>
-                            <option value="Cleaning">Cleaning Services</option>
-                            <option value="Plumbing">Plumbing Services</option>
-                            <option value="Electrical">Electrical Services</option>
-                            <option value="Carpentry">Carpentry Services</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" v-model="service.name" class="form-control" required>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="description">Description</label>
-                        <textarea id="description" v-model="service.description" class="form-control" rows="3" required></textarea>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="price">Price (₹)</label>
-                        <input type="number" id="price" v-model="service.price" class="form-control" min="0" step="0.01" required>
-                    </div>
-
-                    <div class="form-group text-center mt-4">
-                        <button type="submit" class="btn btn-primary me-2">{{ editing ? 'Update' : 'Create' }} Service</button>
-                        <router-link to="/admin/dashboard" class="btn btn-secondary">Cancel</router-link>
-                    </div>
-                </form>
+          <form @submit.prevent="submitForm">
+            <div class="mb-3">
+              <label for="service_type" class="form-label">Service Type</label>
+              <select id="service_type" v-model="service.service_type" class="form-select" required>
+                <option value="">Select a service type</option>
+                <option value="Cleaning">Cleaning Services</option>
+                <option value="Plumbing">Plumbing Services</option>
+                <option value="Electrical">Electrical Services</option>
+                <option value="Carpentry">Carpentry Services</option>
+              </select>
             </div>
+
+            <div class="mb-3">
+              <label for="name" class="form-label">Name</label>
+              <input
+                type="text"
+                id="name"
+                v-model="service.name"
+                class="form-control"
+                required
+              >
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea
+                id="description"
+                v-model="service.description"
+                class="form-control"
+                rows="3"
+                required
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="price" class="form-label">Price (₹)</label>
+              <input
+                type="number"
+                id="price"
+                v-model="service.price"
+                class="form-control"
+                min="0"
+                step="0.01"
+                required
+              >
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+              <button type="submit" class="btn btn-primary">
+                {{ editing ? 'Update' : 'Create' }} Service
+              </button>
+              <router-link to="/admin/dashboard" class="btn btn-secondary">
+                Cancel
+              </router-link>
+            </div>
+          </form>
         </div>
+      </div>
+    </div>
     `,
 };

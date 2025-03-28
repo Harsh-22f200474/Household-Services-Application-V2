@@ -1,53 +1,57 @@
 export default {
   template: `
-    <div class="container mt-4">
-    <div class="row">
-            <div class="col-md-8 offset-md-2">
-                <div class="card">
-                    <div class="card-body">
-                        <h3 class="card-title">Admin Profile</h3>
-                        
-                        <!-- Alert Messages -->
-            <div v-if="message" :class="'alert alert-' + category" role="alert">
-                    {{ message }}
-                        </div>
+    <div class="container my-5">
+      <div class="row">
+        <div class="col-md-8 offset-md-2">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h3 class="card-title mb-4">Admin Profile</h3>
+              
+              <!-- Alert Messages -->
+              <div v-if="message" :class="'alert alert-' + category" role="alert">
+                {{ message }}
+              </div>
 
-                        <!-- Profile Information -->
-                        <div v-if="profileData" class="mt-4">
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <tbody>
-                                        <tr>
-                                            <th scope="row" width="30%">Admin ID</th>
-                                            <td>{{ profileData.id }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Username</th>
-                                            <td>{{ profileData.username }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Role</th>
-                                            <td><span class="badge bg-primary">{{ profileData.role }}</span></td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Account Created</th>
-                                            <td>{{ formatDate(profileData.date_created) }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Loading State -->
-                        <div v-if="isLoading" class="text-center mt-4">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
+              <!-- Profile Information -->
+              <div v-if="profileData" class="mt-4">
+                <div class="table-responsive">
+                  <table class="table">
+                    <tbody>
+                      <tr>
+                        <th scope="row" style="width: 30%;">Admin ID</th>
+                        <td>{{ profileData.id }}</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Username</th>
+                        <td>{{ profileData.username }}</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Role</th>
+                        <td>
+                          <span class="badge bg-primary">
+                            {{ profileData.role }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Account Created</th>
+                        <td>{{ formatDate(profileData.date_created) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
+              </div>
+
+              <!-- Loading State -->
+              <div v-if="isLoading" class="text-center mt-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     </div>
     `,
   data() {

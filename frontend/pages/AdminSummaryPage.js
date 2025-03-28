@@ -1,67 +1,66 @@
 export default {
   template: `
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12 text-center">        
-            <h3 class="mt-5">Admin Summary</h3>
-          </div>
+      <div class="container my-5">
+      <div class="row">
+        <div class="col-12 text-center">
+          <h3 class="mb-5">Admin Summary</h3>
         </div>
+      </div>
 
-        <!-- Alert Messages -->
-        <div v-if="messages.length > 0" class="row mt-3">
-          <div class="col-md-12">
-            <div v-for="(message, index) in messages" 
-                 :key="index" 
-                 :class="['alert', 'alert-' + message.category]">
-              {{ message.text }}
-            </div>
-          </div>
-        </div>
-
-        <div class="row mt-4">
-        <!-- Customer Ratings Chart -->
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-body">
-              <h4 class="card-title">Overall Customer Ratings</h4>
-              <div v-if="isLoadingRatings" class="text-center">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-              </div>
-              <canvas v-else id="customerRatingsChart" width="400" height="300"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- Service Requests Chart -->
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-body">
-              <h4 class="card-title">Service Requests Summary</h4>
-                <div v-if="isLoadingRequests" class="text-center">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-              <canvas v-else id="serviceRequestsChart" width="400" height="300"></canvas>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Refresh Button -->
-        <div class="row mt-4">
-          <div class="col-md-12 text-center">
-            <button @click="refreshData" 
-                    class="btn btn-primary" 
-                  :disabled="isLoadingRatings || isLoadingRequests">
-            <span v-if="isLoadingRatings || isLoadingRequests" class="spinner-border spinner-border-sm" role="status"></span>
-              Refresh Data
-            </button>
+      <!-- Alert Messages -->
+      <div v-if="messages.length > 0" class="row mb-3">
+        <div class="col-12">
+          <div v-for="(message, index) in messages" 
+               :key="index" 
+               :class="['alert', 'alert-' + message.category]"
+               role="alert">
+            {{ message.text }}
           </div>
         </div>
       </div>
+
+      <div class="row">
+        <!-- Customer Ratings Chart -->
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h4 class="card-title mb-3">Overall Customer Ratings</h4>
+              <div v-if="isLoadingRatings" class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              <canvas v-else id="customerRatingsChart" width="400" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service Requests Chart -->
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h4 class="card-title mb-3">Service Requests Summary</h4>
+              <div v-if="isLoadingRequests" class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              <canvas v-else id="serviceRequestsChart" width="400" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Refresh Button -->
+      <div class="row mt-4">
+        <div class="col-12 text-center">
+          <button @click="refreshData" class="btn btn-primary" :disabled="isLoadingRatings || isLoadingRequests">
+            <span v-if="isLoadingRatings || isLoadingRequests" class="spinner-border spinner-border-sm me-1" role="status"></span>
+            Refresh Data
+          </button>
+        </div>
+      </div>
+    </div>
     `,
   data() {
     return {

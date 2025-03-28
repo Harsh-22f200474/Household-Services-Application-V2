@@ -1,71 +1,72 @@
 export default {
   template: `
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-6 offset-md-3">        
-                <div class="card">
-                    <div class="card-body">
-                        <h3 class="card-title">Customer Profile</h3>         
-                        <div v-if="message" :class="'alert alert-' + category" role="alert">
-                            {{ message }}
-                        </div>            
-                        <form @submit.prevent="handleSubmit">
-                            <div class="form-group mb-3">
-                                <label for="user_name" class="form-label">Username (Email)</label>
-                                <input 
-                                    type="email" 
-                                    id="user_name" 
-                                    v-model="form.user_name" 
-                                    class="form-control" 
-                                    readonly 
-                                />
-                            </div>
-                            
-                            <div class="form-group mb-3">
-                                <label for="full_name" class="form-label">Full Name</label>
-                                <input 
-                                    type="text" 
-                                    id="full_name" 
-                                    v-model="form.full_name" 
-                                    class="form-control" 
-                                    required
-                                />
-                            </div>
-                            
-                            <div class="form-group mb-3">
-                                <label for="address" class="form-label">Address</label>
-                                <textarea 
-                                    id="address" 
-                                    v-model="form.address" 
-                                    class="form-control" 
-                                    rows="3"
-                                    required
-                                ></textarea>
-                            </div>
-                            
-                            <div class="form-group mb-3">
-                                <label for="pin_code" class="form-label">PIN Code</label>
-                                <input 
-                                    type="text" 
-                                    id="pin_code" 
-                                    v-model="form.pin_code" 
-                                    class="form-control" 
-                                    pattern="[0-9]{6}"
-                                    title="Please enter a valid 6-digit PIN code"
-                                    required
-                                />
-                            </div>                
-                            <div class="form-group text-center">
-                                <button type="submit" class="btn btn-primary" :disabled="isLoading">
-                                    <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-                                    {{ isLoading ? 'Saving...' : 'Save Profile' }}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+    <div class="container my-5">
+      <div class="row">
+        <div class="col-md-6 offset-md-3">
+          <div class="card shadow-sm">
+            <div class="card-header text-center bg-primary text-white">
+              <h4 class="mb-0">Customer Profile</h4>
             </div>
+            <div class="card-body">
+              <!-- Alert Message -->
+              <div v-if="message" :class="'alert alert-' + category" role="alert">
+                {{ message }}
+              </div>
+              <!-- Profile Form -->
+              <form @submit.prevent="handleSubmit">
+                <div class="mb-3">
+                  <label for="user_name" class="form-label">Username (Email)</label>
+                  <input 
+                    type="email" 
+                    id="user_name" 
+                    v-model="form.user_name" 
+                    class="form-control" 
+                    readonly
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="full_name" class="form-label">Full Name</label>
+                  <input 
+                    type="text" 
+                    id="full_name" 
+                    v-model="form.full_name" 
+                    class="form-control" 
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="address" class="form-label">Address</label>
+                  <textarea 
+                    id="address" 
+                    v-model="form.address" 
+                    class="form-control" 
+                    rows="3"
+                    required
+                  ></textarea>
+                </div>
+                <div class="mb-4">
+                  <label for="pin_code" class="form-label">PIN Code</label>
+                  <input 
+                    type="text" 
+                    id="pin_code" 
+                    v-model="form.pin_code" 
+                    class="form-control" 
+                    pattern="[0-9]{6}"
+                    title="Please enter a valid 6-digit PIN code"
+                    required
+                  />
+                </div>
+                <div class="text-center">
+                  <button type="submit" class="btn btn-primary" :disabled="isLoading">
+                    <span v-if="isLoading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    {{ isLoading ? 'Saving...' : 'Save Profile' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
     `,
   data() {

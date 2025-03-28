@@ -1,33 +1,47 @@
 export default {
   template: `
-    <div class="row">
-        <div class="col-md-4 offset-md-4">        
-            <h3>Login</h3>
-            <div v-if="message" :class="'alert alert-' + category" role="alert">
-                {{ message }}
+    <div class="container d-flex align-items-center justify-content-center vh-100">
+      <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
+        <div class="card-body">
+          <h3 class="card-title text-center mb-4">Login</h3>
+          <div v-if="message" :class="'alert alert-' + category" role="alert">
+            {{ message }}
+          </div>
+          <form @submit.prevent="submitLogin">
+            <div class="mb-3">
+              <label for="username" class="form-label">Username (e-mail):</label>
+              <input
+                type="text"
+                id="username"
+                v-model="username"
+                class="form-control"
+                required
+              >
             </div>
-            <form @submit.prevent="submitLogin" class="card p-4">
-                <div class="form-group mb-3">
-                    <label for="username" class="form-label">Username(e-mail):</label>
-                    <input type="text" id="username" v-model="username" class="form-control" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label for="password" class="form-label">Password:</label>
-                    <input type="password" id="password" v-model="password" class="form-control" required>
-                </div>
-                <div class="form-group mb-3">
-                    <button type="submit" class="btn btn-primary w-100" :disabled="isLoading">
-                        <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-                        {{ isLoading ? 'Logging in...' : 'Login' }}
-                    </button>
-                </div>
-                <div class="form-group text-center">
-                    <router-link to="/register" class="text-decoration-none">Register Customer/Professional</router-link>    
-                </div>    
-            </form>
+            <div class="mb-3">
+              <label for="password" class="form-label">Password:</label>
+              <input
+                type="password"
+                id="password"
+                v-model="password"
+                class="form-control"
+                required
+              >
+            </div>
+            <button type="submit" class="btn btn-primary w-100" :disabled="isLoading">
+              <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+              {{ isLoading ? 'Logging in...' : 'Login' }}
+            </button>
+          </form>
+          <div class="text-center mt-3">
+            <router-link to="/register" class="text-decoration-none">
+              Register Customer/Professional
+            </router-link>
+          </div>
         </div>
+      </div>
     </div>
-    `,
+  `,
   data() {
     return {
       username: null,

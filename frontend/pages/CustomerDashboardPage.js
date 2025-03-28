@@ -307,13 +307,13 @@ export default {
     },
   },
   template: `
-    <div class="container">
-      <!-- Alert Messages -->
+    <div class="container my-5">
+      <!-- Alert Message -->
       <div v-if="message" :class="'alert alert-' + category" role="alert">
         {{ message }}
       </div>
 
-      <!-- Loading Indicator -->
+      <!-- Global Loading Indicator -->
       <div v-if="isLoading" class="text-center my-4">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -322,7 +322,7 @@ export default {
 
       <!-- Close Service Confirmation Modal -->
       <div v-if="showCloseServiceModal" class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">Close Service Request</h5>
@@ -331,8 +331,7 @@ export default {
             <div class="modal-body">
               <div class="alert alert-warning">
                 <p class="mb-0">
-                  Are you sure you want to close this service request? 
-                  This action cannot be undone and will mark the service as completed.
+                  Are you sure you want to close this service request? This action cannot be undone and will mark the service as completed.
                 </p>
               </div>
               <div v-if="selectedRequestToClose">
@@ -342,12 +341,7 @@ export default {
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" @click="cancelCloseService">Cancel</button>
-              <button 
-                type="button" 
-                class="btn btn-success" 
-                @click="confirmCloseService"
-                :disabled="isClosing"
-              >
+              <button type="button" class="btn btn-success" @click="confirmCloseService" :disabled="isClosing">
                 {{ isClosing ? 'Closing...' : 'Confirm Close Service' }}
               </button>
             </div>
@@ -357,7 +351,7 @@ export default {
 
       <!-- Professional Selection Modal -->
       <div v-if="showProfessionalModal" class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">Select Professional</h5>
@@ -372,9 +366,9 @@ export default {
                   :class="{ active: selectedProfessionalId === prof.user_id }"
                   @click="selectedProfessionalId = prof.user_id"
                 >
-                  <div class="d-flex w-100 justify-content-between">
+                  <div class="d-flex justify-content-between align-items-center">
                     <h6 class="mb-1">{{ prof.full_name }}</h6>
-                    <small>{{ prof.experience }} years exp.</small>
+                    <small>{{ prof.experience }} yrs</small>
                   </div>
                   <p class="mb-1">Rating: {{ prof.reviews }} ★</p>
                   <small>{{ prof.address }}</small>
@@ -395,37 +389,37 @@ export default {
           </div>
         </div>
       </div>
-  
+
       <!-- Main Content -->
       <div v-else>
         <div class="row mb-4">
-          <div class="col-md-6 offset-md-3">        
-            <h3>Customer Dashboard</h3>
+          <div class="col-12 text-center">
+            <h3 class="mb-4">Customer Dashboard</h3>
           </div>
         </div>
-  
-      <!-- Services Table -->
-        <div class="card mt-4">
+
+        <!-- Available Services Card -->
+        <div class="card mb-4 shadow-sm">
           <div class="card-body">
-            <h4 class="card-title">Available Services</h4>
+            <h4 class="card-title mb-3">Available Services</h4>
             <div class="table-responsive">
               <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Service Name</th>
+                <thead>
+                  <tr>
+                    <th>Service Name</th>
                     <th>Type</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="service in services" :key="service.id">
-            <td>{{ service.name }}</td>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th class="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="service in services" :key="service.id">
+                    <td>{{ service.name }}</td>
                     <td>{{ service.service_type }}</td>
-            <td>{{ service.description }}</td>
+                    <td>{{ service.description }}</td>
                     <td>₹{{ service.price }}</td>
-                    <td>
+                    <td class="text-center">
                       <button 
                         @click="showProfessionalSelection(service.id)" 
                         class="btn btn-primary btn-sm"
@@ -435,33 +429,33 @@ export default {
                         )"
                       >
                         Request Service
-              </button>
-            </td>
-          </tr>
+                      </button>
+                    </td>
+                  </tr>
                   <tr v-if="services.length === 0">
                     <td colspan="5" class="text-center">No services available</td>
-          </tr>
-        </tbody>
-      </table>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
 
-        <!-- Service History -->
-        <div class="card mt-4">
+        <!-- Service History Card -->
+        <div class="card mb-4 shadow-sm">
           <div class="card-body">
-            <h4 class="card-title">Service History</h4>
+            <h4 class="card-title mb-3">Service History</h4>
             <div class="table-responsive">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Service Name</th>
-            <th>Professional</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Service Name</th>
+                    <th>Professional</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
                   <tr v-for="request in serviceRequests" :key="request.id">
                     <td>{{ serviceDict[request.service_id]?.name }}</td>
                     <td>{{ profDict[request.professional_id]?.full_name || 'Not Assigned' }}</td>
@@ -470,10 +464,10 @@ export default {
                         {{ request.service_status }}
                       </span>
                     </td>
-                    <td>
+                    <td class="text-center">
                       <button 
                         v-if="request.service_status === 'accepted'" 
-                        @click="closeServiceRequest(request)"
+                        @click="closeServiceRequest(request)" 
                         class="btn btn-success btn-sm"
                       >
                         Close Service
@@ -491,13 +485,13 @@ export default {
                       <span v-else-if="request.service_status === 'requested'">
                         Pending
                       </span>
-            </td>
-          </tr>
+                    </td>
+                  </tr>
                   <tr v-if="serviceRequests.length === 0">
                     <td colspan="4" class="text-center">No service requests found</td>
-          </tr>
-        </tbody>
-      </table>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
