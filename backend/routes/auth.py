@@ -1,196 +1,219 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import (
-    create_access_token,
-    create_refresh_token,
-    jwt_required,
-    get_jwt_identity
-)
-from models.models import User, Professional, Customer, Service, ServiceRequest
-from extensions import db, bcrypt
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt
+from werkzeug.security import generate_password_hash, check_password_hash
+from models import db, User, CustomerProfile, ProfessionalProfile
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    try:
-        data = request.get_json()
-        print("Registration data received:", data)
+    """
+    Register a new user
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: user
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+            role:
+              type: string
+              enum: [Admin, Professional, Customer]
+    responses:
+      200:
+        description: User registered successfully
+      400:
+        description: Invalid input or user already exists
+    """
+    data = request.get_json()
+    
+    if not all(k in data for k in ["username", "password", "role"]):
+        return jsonify({"category": "danger", "message": "Missing required fields"}), 400
         
-        # Check required fields
-        required_fields = ['username', 'email', 'password', 'name', 'role']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'error': f'Missing required field: {field}'}), 400
-
-        # Check if user already exists
-        if User.query.filter_by(email=data['email']).first():
-            return jsonify({'error': 'Email already registered'}), 400
-        if User.query.filter_by(username=data['username']).first():
-            return jsonify({'error': 'Username already taken'}), 400
-
-        # Create new user
-        new_user = User(
-            username=data['username'],
-            email=data['email'],
-            password_hash=bcrypt.generate_password_hash(data['password']).decode('utf-8'),
-            name=data['name'],
-            role=data['role'],
-            service_type_id=data.get('service_type_id') if data['role'] == 'professional' else None
-        )
-
+    if User.query.filter_by(username=data['username']).first():
+        return jsonify({"category": "danger", "message": "Username already exists"}), 400
+        
+    hashed_password = generate_password_hash(data['password'])
+    new_user = User(
+        username=data['username'],
+        password=hashed_password,
+        role=data['role']
+    )
+    
+    try:
         db.session.add(new_user)
-        db.session.flush()  # This gets us the user.id before committing
-
-        # Create role-specific profile
-        if data['role'] == 'professional':
-            professional = Professional(
-                user_id=new_user.id,
-                service_type=str(data.get('service_type_id')),
-                experience=data.get('experience', 0),
-                description=data.get('description', ''),
-                is_verified=False  # New professionals start unverified
-            )
-            db.session.add(professional)
-        elif data['role'] == 'customer':
-            customer = Customer(
-                user_id=new_user.id,
-                address=data.get('address', ''),
-                phone=data.get('phone', '')
-            )
-            db.session.add(customer)
-
         db.session.commit()
-
-        return jsonify({
-            'message': 'User registered successfully',
-            'user': {
-                'id': new_user.id,
-                'username': new_user.username,
-                'email': new_user.email,
-                'name': new_user.name,
-                'role': new_user.role
-            }
-        }), 201
-
+        return jsonify({"category": "success", "message": "User registered successfully"}), 200
     except Exception as e:
-        print("Registration error:", str(e))
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"category": "danger", "message": str(e)}), 500
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    try:
-        data = request.get_json()
-        
-        if not data or 'email' not in data or 'password' not in data:
-            return jsonify({'error': 'Email and password are required'}), 400
-
-        user = User.query.filter_by(email=data['email']).first()
-        
-        if not user or not bcrypt.check_password_hash(user.password_hash, data['password']):
-            return jsonify({'error': 'Invalid email or password'}), 401
-
-        # Check if professional is verified
-        if user.role == 'professional':
-            professional = Professional.query.filter_by(user_id=user.id).first()
-            if not professional or not professional.is_verified:
-                return jsonify({'error': 'Your account is pending admin approval'}), 403
-
-        access_token = create_access_token(identity=str(user.id))
-        
-        return jsonify({
-            'access_token': access_token,
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'name': user.name,
-                'role': user.role
-            }
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@auth_bp.route('/refresh', methods=['POST'])
-@jwt_required(refresh=True)
-def refresh():
-    current_user = get_jwt_identity()
-    access_token = create_access_token(identity=current_user)
+    """
+    Login user
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: credentials
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+    responses:
+      200:
+        description: Login successful
+      401:
+        description: Invalid credentials
+    """
+    data = request.get_json()
     
-    return jsonify({'access_token': access_token}), 200
+    if not all(k in data for k in ["username", "password"]):
+        return jsonify({"category": "danger", "message": "Missing required fields"}), 400
+        
+    user = User.query.filter_by(username=data['username']).first()
+    
+    if not user or not check_password_hash(user.password, data['password']):
+        return jsonify({"category": "danger", "message": "Invalid username or password"}), 401
+        
+    if user.blocked:
+        return jsonify({"category": "danger", "message": "Your account is blocked"}), 401
+        
+    access_token = create_access_token(identity=str(user.id))
+    return jsonify({
+        "category": "success",
+        "message": "Login successful",
+        "access_token": access_token,
+        "role": user.role,
+        "approve": user.approve
+    }), 200
 
 @auth_bp.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
-    # In a real application, you might want to blacklist the token
-    return jsonify({"message": "Successfully logged out"}), 200
+    """
+    Logout user
+    ---
+    tags:
+      - Authentication
+    responses:
+      200:
+        description: Logout successful
+    """
+    return jsonify({"category": "success", "message": "Logout successful"}), 200
 
-@auth_bp.route('/profile', methods=['GET'])
+@auth_bp.route('/get-claims', methods=['GET'])
 @jwt_required()
-def get_profile():
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-    
-    if user.role == 'customer':
-        profile = Customer.query.filter_by(user_id=user.id).first()
-        profile_data = {
-            'address': profile.address,
-            'phone': profile.phone
-        }
-    elif user.role == 'professional':
-        profile = Professional.query.filter_by(user_id=user.id).first()
-        profile_data = {
-            'service_type': profile.service_type,
-            'experience': profile.experience,
-            'description': profile.description,
-            'is_verified': profile.is_verified
-        }
-    else:  # admin
-        profile_data = {}
-
-    return jsonify({
-        'id': user.id,
-        'username': user.username,
-        'email': user.email,
-        'role': user.role,
-        'profile': profile_data
-    }), 200
-
-@auth_bp.route('/profile', methods=['PUT'])
-@jwt_required()
-def update_profile():
-    current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
-    data = request.get_json()
-    
+def get_claims():
+    """
+    Get user claims from JWT token
+    ---
+    tags:
+      - Authentication
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: User claims retrieved successfully
+      401:
+        description: Invalid or missing token
+    """
     try:
-        # Update basic user info
-        if 'username' in data:
-            user.username = data['username']
-        if 'email' in data:
-            user.email = data['email']
+        claims = get_jwt()
+        user = User.query.get(claims['sub'])
+        
+        if not user:
+            return jsonify({
+                "category": "danger",
+                "message": "User not found"
+            }), 404
             
-        # Update role-specific profile
-        if user.role == 'customer':
-            profile = Customer.query.filter_by(user_id=user.id).first()
-            if 'address' in data:
-                profile.address = data['address']
-            if 'phone' in data:
-                profile.phone = data['phone']
+        redirect = None
+        if user.role in ['Customer', 'Professional']:
+            # For customers and professionals, check if profile is complete
+            profile = None
+            if user.role == 'Customer':
+                profile = CustomerProfile.query.filter_by(user_id=user.id).first()
+            else:
+                profile = ProfessionalProfile.query.filter_by(user_id=user.id).first()
                 
-        elif user.role == 'professional':
-            profile = Professional.query.filter_by(user_id=user.id).first()
-            if 'service_type' in data:
-                profile.service_type = data['service_type']
-            if 'experience' in data:
-                profile.experience = data['experience']
-            if 'description' in data:
-                profile.description = data['description']
-                
-        db.session.commit()
-        return jsonify({"message": "Profile updated successfully"}), 200
+            if not profile:
+                redirect = f"{user.role.lower()}_profile"
+            else:
+                redirect = f"{user.role.lower()}_dashboard"
+        
+        return jsonify({
+            "category": "success",
+            "message": "Claims retrieved successfully",
+            "claims": {
+                "user_id": user.id,
+                "role": user.role,
+                "redirect": redirect,
+                "approved": user.approve,
+                "blocked": user.blocked
+            }
+        }), 200
         
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 400
+        return jsonify({
+            "category": "danger",
+            "message": f"Error retrieving claims: {str(e)}"
+        }), 500
+
+@auth_bp.route('/admin/login', methods=['POST'])
+def admin_login():
+    """
+    Login admin user
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - name: credentials
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+    responses:
+      200:
+        description: Login successful
+      401:
+        description: Invalid credentials
+    """
+    data = request.get_json()
+    
+    if not all(k in data for k in ["username", "password"]):
+        return jsonify({"category": "danger", "message": "Missing required fields"}), 400
+        
+    user = User.query.filter_by(username=data['username']).first()
+    
+    if not user or not check_password_hash(user.password, data['password']):
+        return jsonify({"category": "danger", "message": "Invalid username or password"}), 401
+        
+    if user.role != 'Admin':
+        return jsonify({"category": "danger", "message": "Access denied. Admin privileges required."}), 403
+        
+    access_token = create_access_token(identity=str(user.id))
+    return jsonify({
+        "category": "success",
+        "message": "Login successful",
+        "access_token": access_token,
+        "role": user.role
+    }), 200 
