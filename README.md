@@ -39,7 +39,7 @@ A full-stack application for connecting customers with household service profess
 - Celery for background task processing (reminders, reports, exports)
 - Redis for caching and Celery task management
 
-### Frontend (HTML/CSS/JavaScript)
+### Frontend (HTML/CSS/VUE.js)
 
 - Responsive design with modern UI components
 - Client-side rendering for dynamic content
