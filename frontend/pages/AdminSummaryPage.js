@@ -23,14 +23,16 @@ export default {
         <!-- Customer Ratings Chart -->
         <div class="col-md-6 mb-4">
           <div class="card shadow-sm">
-            <div class="card-body">
+            <div class="card-body" style="height: 400px;">
               <h4 class="card-title mb-3">Overall Customer Ratings</h4>
               <div v-if="isLoadingRatings" class="text-center">
                 <div class="spinner-border text-primary" role="status">
                   <span class="visually-hidden">Loading...</span>
                 </div>
               </div>
-              <canvas v-else id="customerRatingsChart" width="400" height="300"></canvas>
+              <div v-else style="position: relative; height: 300px;">
+                <canvas ref="customerRatingsChart" id="customerRatingsChart"></canvas>
+              </div>
             </div>
           </div>
         </div>
@@ -38,14 +40,16 @@ export default {
         <!-- Service Requests Chart -->
         <div class="col-md-6 mb-4">
           <div class="card shadow-sm">
-            <div class="card-body">
+            <div class="card-body" style="height: 400px;">
               <h4 class="card-title mb-3">Service Requests Summary</h4>
               <div v-if="isLoadingRequests" class="text-center">
                 <div class="spinner-border text-primary" role="status">
                   <span class="visually-hidden">Loading...</span>
                 </div>
               </div>
-              <canvas v-else id="serviceRequestsChart" width="400" height="300"></canvas>
+              <div v-else style="position: relative; height: 300px;">
+                <canvas ref="serviceRequestsChart" id="serviceRequestsChart"></canvas>
+              </div>
             </div>
           </div>
         </div>
@@ -114,8 +118,17 @@ export default {
         }
 
         const data = await response.json();
-        console.log("Service Requests Data:", data);
-        this.updateCustomerRatingsChart(data);
+        console.log("Customer Ratings Data:", data);
+
+        // Ensure we have data before updating chart
+        if (data) {
+          this.updateCustomerRatingsChart(data);
+        } else {
+          this.messages.push({
+            category: "warning",
+            text: "No ratings data available",
+          });
+        }
       } catch (error) {
         console.error("Error fetching ratings data:", error);
         this.messages.push({
@@ -127,27 +140,37 @@ export default {
       }
     },
 
-    updateCustomerRatingsChart(data) {
-      const ctx = document
-        .getElementById("customerRatingsChart")
-        ?.getContext("2d");
-      if (!ctx) return;
+    async updateCustomerRatingsChart(data) {
+      // Wait for Vue to update the DOM before accessing canvas
+      await this.$nextTick();
+
+      const canvas = this.$refs.customerRatingsChart;
+      if (!canvas) {
+        console.error("Customer ratings chart canvas not found");
+        return;
+      }
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        console.error("Could not get 2d context for customer ratings chart");
+        return;
+      }
 
       if (this.customerRatingsChart) {
         this.customerRatingsChart.destroy();
       }
 
-      // Sample data structure - you'll need to adjust based on your actual API response
+      // Ensure we have proper data structure with defaults
       const chartData = {
         labels: ["5 Stars", "4 Stars", "3 Stars", "2 Stars", "1 Star"],
         datasets: [
           {
             data: [
-              data.fiveStars || 30,
-              data.fourStars || 25,
-              data.threeStars || 20,
-              data.twoStars || 15,
-              data.oneStar || 10,
+              parseInt(data.fiveStars || 0),
+              parseInt(data.fourStars || 0),
+              parseInt(data.threeStars || 0),
+              parseInt(data.twoStars || 0),
+              parseInt(data.oneStar || 0),
             ],
             backgroundColor: [
               "rgba(75, 192, 192, 0.7)",
@@ -173,7 +196,7 @@ export default {
         data: chartData,
         options: {
           responsive: true,
-          maintainAspectRatio: false,
+          maintainAspectRatio: true,
           plugins: {
             legend: {
               position: "right",
@@ -224,7 +247,18 @@ export default {
         }
 
         const data = await response.json();
-        this.updateServiceRequestsChart(data);
+        console.log("Service Requests Data details:", data);
+
+        // Check if we actually have data to display
+        if (Array.isArray(data) && data.length > 0) {
+          this.updateServiceRequestsChart(data);
+        } else {
+          console.warn("No service requests data or empty array returned");
+          this.messages.push({
+            category: "warning",
+            text: "No service requests data available",
+          });
+        }
       } catch (error) {
         console.error("Error fetching service requests:", error);
         this.messages.push({
@@ -236,25 +270,53 @@ export default {
       }
     },
 
-    updateServiceRequestsChart(data) {
-      const ctx = document
-        .getElementById("serviceRequestsChart")
-        ?.getContext("2d");
-      if (!ctx) return;
+    async updateServiceRequestsChart(data) {
+      // Wait for Vue to update the DOM before accessing canvas
+      await this.$nextTick();
+
+      const canvas = this.$refs.serviceRequestsChart;
+      if (!canvas) {
+        console.error("Service requests chart canvas not found");
+        return;
+      }
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        console.error("Could not get 2d context for service requests chart");
+        return;
+      }
 
       if (this.serviceRequestsChart) {
         this.serviceRequestsChart.destroy();
       }
 
-      const labels = data.map((item) => {
-        const date = new Date(item.date);
-        return date.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
-      });
+      // Process data safely with validation
+      let labels = [];
+      let counts = [];
 
-      const counts = data.map((item) => item.count);
+      try {
+        // Make sure dates are properly parsed
+        labels = data.map((item) => {
+          if (!item.date) return "Unknown";
+          const date = new Date(item.date);
+          return !isNaN(date)
+            ? date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })
+            : "Invalid date";
+        });
+
+        // Make sure counts are numbers
+        counts = data.map((item) => parseInt(item.count || 0));
+      } catch (error) {
+        console.error("Error processing chart data:", error);
+        this.messages.push({
+          category: "danger",
+          text: "Error processing chart data",
+        });
+        return;
+      }
 
       this.serviceRequestsChart = new Chart(ctx, {
         type: "bar",
@@ -272,7 +334,7 @@ export default {
         },
         options: {
           responsive: true,
-          maintainAspectRatio: false,
+          maintainAspectRatio: true,
           scales: {
             y: {
               beginAtZero: true,

@@ -240,7 +240,7 @@ export default {
           throw new Error("Invalid service requests data format");
         }
 
-        // Count requests by status
+        // Process requests data
         const statusCounts = {
           Received: 0,
           Closed: 0,

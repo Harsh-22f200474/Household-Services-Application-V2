@@ -258,3 +258,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Celery](https://docs.celeryproject.org/) - Distributed task queue
 - [Redis](https://redis.io/) - In-memory data structure store
 - [SQLAlchemy](https://www.sqlalchemy.org/) - SQL toolkit and ORM
+
+## Project Demonstration Video
+
+[![Project Demonstration Video]()](https://drive.google.com/file/d/1c-7d3OywORPsT_KQwLlWjyWmezUe3-Ke/view?usp=sharing)
+
+Click the image above or [this link](https://drive.google.com/file/d/1c-7d3OywORPsT_KQwLlWjyWmezUe3-Ke/view?usp=sharing) to watch the project demonstration video.

@@ -415,22 +415,19 @@ def get_service_requests_summary(user_id):
             "message": "Unauthorized access"
         }), 403
     
-    # Get service request counts by date for the last 7 days
-    seven_days_ago = datetime.now() - timedelta(days=7)
+    # Get all service requests for this professional
+    service_requests = ServiceRequest.query.filter_by(professional_id=user_id).all()
     
-    daily_counts = db.session.query(
-        db.func.date(ServiceRequest.date_of_request).label('date'),
-        db.func.count(ServiceRequest.id).label('count')
-    ).filter(
-        ServiceRequest.professional_id == user_id,
-        ServiceRequest.date_of_request >= seven_days_ago
-    ).group_by(
-        db.func.date(ServiceRequest.date_of_request)
-    ).order_by(
-        db.func.date(ServiceRequest.date_of_request)
-    ).all()
-    
-    # Format the data
-    summary = [{'date': date.strftime('%Y-%m-%d'), 'count': count} for date, count in daily_counts]
-    
-    return jsonify(summary) 
+    # Return the complete service request objects so frontend can categorize them
+    return jsonify([
+        {
+            'id': req.id,
+            'customer_id': req.customer_id,
+            'professional_id': req.professional_id,
+            'service_id': req.service_id,
+            'service_status': req.service_status,
+            'date_of_request': req.date_of_request.isoformat() if req.date_of_request else None,
+            'date_of_accept_reject': req.date_of_accept_reject.isoformat() if req.date_of_accept_reject else None,
+            'date_of_completion': req.date_of_completion.isoformat() if req.date_of_completion else None
+        } for req in service_requests
+    ])
