@@ -75,33 +75,39 @@ export default {
                 <th>Experience</th>
                 <th>Reviews</th>
                 <th>Doc</th>
+                <th>Profile Status</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="professional in professionalProfile" :key="professional.id">
-                <td>{{ professional.id }}</td>
+              <tr v-for="professional in professionalProfile" :key="professional.user_id">
+                <td>{{ professional.user_id }}</td>
                 <td>{{ professional.full_name }}</td>
-                <td>{{ professional.service_type }}</td>
-                <td>{{ professional.experience }}</td>
-                <td>{{ professional.reviews }}</td>
+                <td>{{ professional.service_type || 'N/A' }}</td>
+                <td>{{ professional.experience || 'N/A' }}</td>
+                <td>{{ professional.reviews || 'N/A' }}</td>
                 <td>
-                  <a href="#" @click.prevent="downloadFile(professional.filename)">
+                  <a v-if="professional.has_profile" href="#" @click.prevent="downloadFile(professional.filename)">
                     {{ professional.filename }}
                   </a>
+                  <span v-else>No document</span>
+                </td>
+                <td>
+                  <span v-if="professional.has_profile" class="badge bg-success">Profile Complete</span>
+                  <span v-else class="badge bg-warning">Pending Profile</span>
                 </td>
                 <td>
                   <button 
                     @click="toggleApproval(professional.user_id)" 
-                    :class="['btn btn-sm me-2', userDict[professional.user_id]?.approve ? 'btn-secondary' : 'btn-success']"
+                    :class="['btn btn-sm me-2', professional.approve ? 'btn-secondary' : 'btn-success']"
                   >
-                    {{ userDict[professional.user_id]?.approve ? 'Reject' : 'Approve' }}
+                    {{ professional.approve ? 'Reject' : 'Approve' }}
                   </button>
                   <button 
                     @click="toggleBlock(professional.user_id)" 
-                    :class="['btn btn-sm', userDict[professional.user_id]?.blocked ? 'btn-success' : 'btn-danger']"
+                    :class="['btn btn-sm', professional.blocked ? 'btn-success' : 'btn-danger']"
                   >
-                    {{ userDict[professional.user_id]?.blocked ? 'Unblock' : 'Block' }}
+                    {{ professional.blocked ? 'Unblock' : 'Block' }}
                   </button>
                 </td>
               </tr>
@@ -185,14 +191,8 @@ export default {
         if (response.ok) {
           const data = await response.json();
           this.professionalProfile = data;
-          // Create userDict from professional data
-          this.userDict = data.reduce((acc, prof) => {
-            acc[prof.user_id] = {
-              approve: prof.approve,
-              blocked: prof.blocked,
-            };
-            return acc;
-          }, {});
+          // No need for userDict anymore as we get all data directly
+          console.log("Fetched professionals:", data);
         } else {
           const errorData = await response.json();
           this.message = errorData.message;
@@ -201,6 +201,7 @@ export default {
       } catch (error) {
         this.message = "Error fetching professionals";
         this.category = "danger";
+        console.error("Error:", error);
       }
     },
     async fetchServiceRequests() {
@@ -260,6 +261,18 @@ export default {
           return;
         }
 
+        // Find the professional in the array
+        const professionalIndex = this.professionalProfile.findIndex(
+          (p) => p.user_id === userId
+        );
+        if (professionalIndex === -1) {
+          this.message = "Professional not found in the list";
+          this.category = "danger";
+          return;
+        }
+
+        const professional = this.professionalProfile[professionalIndex];
+
         const response = await fetch(`/admin/professional/${userId}/approve`, {
           method: "PUT",
           headers: {
@@ -267,7 +280,7 @@ export default {
             Authorization: "Bearer " + localStorage.getItem("token"),
           },
           body: JSON.stringify({
-            approve: !this.userDict[userId]?.approve,
+            approve: !professional.approve,
           }),
         });
 
@@ -276,15 +289,14 @@ export default {
         this.category = data.category;
 
         if (response.ok) {
-          // Initialize userDict entry if it doesn't exist
-          if (!this.userDict[userId]) {
-            this.userDict[userId] = {};
-          }
-          // Update the approval status from the server response
-          this.userDict[userId].approve = data.approve;
+          // Update the professional data directly in the array
+          this.professionalProfile[professionalIndex].approve = data.approve;
+          this.professionalProfile[professionalIndex].blocked = data.blocked;
 
-          // Refresh the professionals list to ensure we have the latest data
-          await this.fetchProfessionals();
+          console.log(
+            "Professional approval updated:",
+            this.professionalProfile[professionalIndex]
+          );
         }
       } catch (error) {
         console.error("Error in toggleApproval:", error);
@@ -294,6 +306,24 @@ export default {
     },
     async toggleBlock(userId) {
       try {
+        if (!userId) {
+          this.message = "Invalid user ID";
+          this.category = "danger";
+          return;
+        }
+
+        // Find the professional in the array
+        const professionalIndex = this.professionalProfile.findIndex(
+          (p) => p.user_id === userId
+        );
+        if (professionalIndex === -1) {
+          this.message = "Professional not found in the list";
+          this.category = "danger";
+          return;
+        }
+
+        const professional = this.professionalProfile[professionalIndex];
+
         const response = await fetch(`/admin/professional/${userId}/block`, {
           method: "PUT",
           headers: {
@@ -301,7 +331,7 @@ export default {
             Authorization: "Bearer " + localStorage.getItem("token"),
           },
           body: JSON.stringify({
-            blocked: !this.userDict[userId]?.blocked,
+            blocked: !professional.blocked,
           }),
         });
 
@@ -310,10 +340,18 @@ export default {
         this.category = data.category;
 
         if (response.ok) {
-          this.userDict[userId].blocked = !this.userDict[userId].blocked;
+          // Update the professional data directly in the array
+          this.professionalProfile[professionalIndex].blocked = data.blocked;
+          this.professionalProfile[professionalIndex].approve = data.approve;
+
+          console.log(
+            "Professional block status updated:",
+            this.professionalProfile[professionalIndex]
+          );
         }
       } catch (error) {
-        this.message = "Error updating block status";
+        console.error("Error in toggleBlock:", error);
+        this.message = "Network error while updating block status";
         this.category = "danger";
       }
     },

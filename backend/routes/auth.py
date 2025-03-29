@@ -41,16 +41,33 @@ def register():
         return jsonify({"category": "danger", "message": "Username already exists"}), 400
         
     hashed_password = generate_password_hash(data['password'])
+    
+    # Set defaults based on role
+    approve = True
+    blocked = False
+    
+    # Professionals need admin approval
+    if data['role'] == 'Professional':
+        approve = False
+        blocked = True
+    
     new_user = User(
         username=data['username'],
         password=hashed_password,
-        role=data['role']
+        role=data['role'],
+        approve=approve,
+        blocked=blocked
     )
     
     try:
         db.session.add(new_user)
         db.session.commit()
-        return jsonify({"category": "success", "message": "User registered successfully"}), 200
+        
+        message = "User registered successfully"
+        if data['role'] == 'Professional':
+            message = "Professional registered successfully. Please wait for admin approval."
+            
+        return jsonify({"category": "success", "message": message}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"category": "danger", "message": str(e)}), 500

@@ -9,8 +9,8 @@ class User(db.Model):
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)  # Admin, Professional, Customer
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
-    approve = db.Column(db.Boolean, default=False)
-    blocked = db.Column(db.Boolean, default=True)
+    approve = db.Column(db.Boolean, default=None)  # Will be set based on role in registration
+    blocked = db.Column(db.Boolean, default=None)  # Will be set based on role in registration
 
     def __repr__(self):
         return f'<User {self.username}>'

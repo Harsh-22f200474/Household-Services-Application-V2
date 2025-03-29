@@ -25,8 +25,8 @@ export default {
                 <div class="mb-3">
                   <label for="role" class="form-label">Select Role</label>
                   <select id="role" v-model="role" class="form-select" required>
-                    <option value="customer">Customer</option>
-                    <option value="professional">Professional</option>
+                    <option value="Customer">Customer</option>
+                    <option value="Professional">Professional</option>
                   </select>
                 </div>
                 <div class="text-center">

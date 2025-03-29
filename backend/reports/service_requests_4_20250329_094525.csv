@@ -1,0 +1,19 @@
+Request ID,Service Status,Date of Request,Date of Accept/Reject,Date of Completion,Remarks
+4,completed,2024-10-04 21:08:56.832587,2024-10-05 21:08:56.832587,2024-10-12 21:08:56.832587,Service request for House Cleaning
+6,rejected,2025-02-22 21:08:56.832587,2025-02-25 21:08:56.832587,,Service request for Office Cleaning
+8,accepted,2024-11-02 21:08:56.832587,2024-11-05 21:08:56.832587,,Service request for Deep Cleaning
+9,requested,2024-11-08 21:08:56.832587,,,Service request for House Cleaning
+13,accepted,2025-03-20 21:08:56.832587,2025-03-23 21:08:56.832587,,Service request for Deep Cleaning
+17,rejected,2024-11-20 21:08:56.832587,2024-11-23 21:08:56.832587,,Service request for Deep Cleaning
+18,completed,2025-02-24 21:08:56.832587,2025-02-27 21:08:56.832587,2025-03-06 21:08:56.832587,Service request for Office Cleaning
+29,rejected,2025-03-12 21:08:56.832587,2025-03-14 21:08:56.832587,,Service request for Office Cleaning
+38,requested,2025-01-23 21:08:56.832587,,,Service request for House Cleaning
+49,requested,2025-01-19 21:08:56.832587,,,Service request for Window Cleaning
+50,completed,2024-11-27 21:08:56.832587,2024-11-29 21:08:56.832587,2025-03-28 11:12:03.403742,Service request for Office Cleaning
+52,requested,2024-12-09 21:08:56.832587,,,Service request for Office Cleaning
+63,accepted,2025-01-10 21:08:56.832587,2025-01-12 21:08:56.832587,,Service request for House Cleaning
+67,accepted,2025-03-20 21:08:56.832587,2025-03-23 21:08:56.832587,,Service request for Window Cleaning
+71,accepted,2024-12-07 21:08:56.832587,2024-12-09 21:08:56.832587,,Service request for Deep Cleaning
+75,requested,2024-10-21 21:08:56.832587,,,Service request for Office Cleaning
+76,completed,2025-03-11 21:08:56.832587,2025-03-14 21:08:56.832587,2025-03-19 21:08:56.832587,Service request for Office Cleaning
+83,requested,2025-03-09 21:08:56.832587,,,Service request for Office Cleaning

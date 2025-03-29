@@ -204,7 +204,7 @@ def delete_service(service_id):
 @admin_required()
 def get_professionals():
     """
-    Get all professionals
+    Get all professionals, including those who haven't created profiles yet
     ---
     tags:
       - Admin
@@ -212,13 +212,40 @@ def get_professionals():
       200:
         description: List of professionals
     """
-    professionals = (
-        ProfessionalProfile.query
-        .join(User, ProfessionalProfile.user_id == User.id)
-        .add_columns(User.approve, User.blocked)
-        .all()
-    )
-    return jsonify([{**prof[0].as_dict(), 'approve': prof[1], 'blocked': prof[2]} for prof in professionals]), 200
+    try:
+        # First, get all users with the role "Professional"
+        professional_users = User.query.filter_by(role="Professional").all()
+        
+        result = []
+        for user in professional_users:
+            # Check if the professional has created a profile
+            profile = ProfessionalProfile.query.filter_by(user_id=user.id).first()
+            
+            if profile:
+                # If profile exists, include all profile data plus user approval status
+                prof_data = profile.as_dict()
+                prof_data.update({
+                    'approve': user.approve,
+                    'blocked': user.blocked,
+                    'has_profile': True
+                })
+            else:
+                # If no profile exists yet, include basic user data
+                prof_data = {
+                    'user_id': user.id,
+                    'username': user.username,
+                    'approve': user.approve,
+                    'blocked': user.blocked,
+                    'has_profile': False,
+                    'full_name': "Profile not created yet"
+                }
+            
+            result.append(prof_data)
+            
+        return jsonify(result), 200
+    except Exception as e:
+        print(f"Error fetching professionals: {str(e)}")
+        return jsonify({"category": "danger", "message": f"Error retrieving professionals: {str(e)}"}), 500
 
 @admin_bp.route('/admin/professional/<int:user_id>/approve', methods=['PUT'])
 @jwt_required()
@@ -267,18 +294,29 @@ def approve_professional(user_id):
         if user.role != 'Professional':
             return jsonify({"category": "danger", "message": "User is not a professional"}), 400
         
-        # Get professional profile to verify it exists
+        # Get professional profile if it exists
         prof_profile = ProfessionalProfile.query.filter_by(user_id=user_id).first()
-        if not prof_profile:
-            return jsonify({"category": "danger", "message": "Professional profile not found"}), 404
         
+        # Update user approval status
         user.approve = data['approve']
+        
+        # If approved, also unblock the user
+        if data['approve']:
+            user.blocked = False
+        
         db.session.commit()
+        
+        # Set response message based on whether profile exists
+        if prof_profile:
+            msg = f"Professional {prof_profile.full_name} has been {'approved' if data['approve'] else 'rejected'}"
+        else:
+            msg = f"Professional (ID: {user_id}) has been {'approved' if data['approve'] else 'rejected'}"
         
         return jsonify({
             "category": "success", 
-            "message": f"Professional {prof_profile.full_name} has been {'approved' if data['approve'] else 'rejected'}",
-            "approve": user.approve
+            "message": msg,
+            "approve": user.approve,
+            "blocked": user.blocked
         }), 200
         
     except Exception as e:
@@ -314,23 +352,53 @@ def block_professional(user_id):
       404:
         description: Professional not found
     """
-    data = request.get_json()
-    
-    if 'blocked' not in data:
-        return jsonify({"category": "danger", "message": "Block status is required"}), 400
-    
-    user = User.query.get(user_id)
-    if not user or user.role != 'Professional':
-        return jsonify({"category": "danger", "message": "Professional not found"}), 404
-    
-    user.blocked = data['blocked']
-    
     try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"category": "danger", "message": "No data provided"}), 400
+            
+        if 'blocked' not in data:
+            return jsonify({"category": "danger", "message": "Block status is required"}), 400
+        
+        if not isinstance(data['blocked'], bool):
+            return jsonify({"category": "danger", "message": "Block status must be a boolean"}), 400
+        
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"category": "danger", "message": "User not found"}), 404
+            
+        if user.role != 'Professional':
+            return jsonify({"category": "danger", "message": "User is not a professional"}), 400
+        
+        # Get professional profile if it exists
+        prof_profile = ProfessionalProfile.query.filter_by(user_id=user_id).first()
+        
+        # Update block status
+        user.blocked = data['blocked']
+        
+        # If blocked, automatically set approve to false
+        if data['blocked']:
+            user.approve = False
+        
         db.session.commit()
-        return jsonify({"category": "success", "message": "Professional block status updated successfully"}), 200
+        
+        # Set response message based on whether profile exists
+        if prof_profile:
+            msg = f"Professional {prof_profile.full_name} has been {'blocked' if data['blocked'] else 'unblocked'}"
+        else:
+            msg = f"Professional (ID: {user_id}) has been {'blocked' if data['blocked'] else 'unblocked'}"
+        
+        return jsonify({
+            "category": "success", 
+            "message": msg,
+            "approve": user.approve,
+            "blocked": user.blocked
+        }), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({"category": "danger", "message": str(e)}), 500
+        print(f"Error updating block status for professional {user_id}: {str(e)}")
+        return jsonify({"category": "danger", "message": f"Database error: {str(e)}"}), 500
 
 @admin_bp.route('/admin/services', methods=['GET'])
 @jwt_required()

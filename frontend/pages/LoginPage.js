@@ -9,7 +9,7 @@ export default {
           </div>
           <form @submit.prevent="submitLogin">
             <div class="mb-3">
-              <label for="username" class="form-label">Username (e-mail):</label>
+              <label for="username" class="form-label">Username</label>
               <input
                 type="text"
                 id="username"

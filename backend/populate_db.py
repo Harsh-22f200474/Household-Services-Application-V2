@@ -83,13 +83,15 @@ def populate_database():
     for service_category in service_types:
         num_professionals = random.randint(2, 4)
         for i in range(num_professionals):
-            # Create professional user with initial approval status as False
+            # Create professional user with appropriate approval status
+            # Make some professionals pre-approved for testing, others pending approval
+            is_approved = random.choice([True, False])
             professional = User(
                 username=f"{service_category['type'].lower()}_pro_{i+1}",
                 password=generate_password_hash("password123"),
                 role="Professional",
-                approve=random.choice([True, False]),  # Professionals need admin approval
-                blocked=False   # Initially not blocked
+                approve=is_approved,  # Some professionals pre-approved for testing
+                blocked=not is_approved  # Blocked if not approved
             )
             db.session.add(professional)
             db.session.flush()  # Get the ID
